@@ -1,10 +1,8 @@
 #!/usr/bin/perl -w
 
-# pi per gene: jfr med randomiserat dataset: 1) shuffle pi mellan locus (bara loci som har snps), eller 2) shuflle pi över hela genomet (alla loci).
-
 =head1 NAME
 
-pogenom.pl - Calculates nucleotide diveristy (pi) and fixation indices (FST) from VCF file(s)
+pogenom.pl - Calculates population genomic parameters from a VCF file
 
 =head1 USAGE (minimum input)
 
@@ -21,20 +19,27 @@ perl pogenom.pl -vcf_file VCF_FILE -o OUTPUT_FILES_PREFIX -gff_file GFF_FILE [-h
 
 -o OUTPUT_FILES_PREFIX		Specify the prefix of the output file name(s) (overwrites existing files with same names)
 
+-genome_size GENOME_SIZE    Specify genome size (in bp; integer). Not required if -gff_file is given
+ 
+
 
 =head1 OPIONAL ARGUMENTS
 
--genome_size GENOME_SIZE    Specify genome size (in bp)
+-gff_file GFF_FILE          Specify gff file. Either this or -genome_size must be given
  
--gff_file GFF_FILE          Specify gff file. Either this or genome_size must be given.
-
+-genetic_code_file GENETIC_CODE_FILE Specify genetic code file. E.g. standard_genetic_code.txt in the POGENOM distribution
+ 
 -min_count MIN_COUNT        Specify minimum coverage for a locus to be included for the sample
+ 
+-loci_file LOCI_FILE        Specify file with ids for loci to include
  
 -min_found MIN_FOUND_IN     Specify minimum number samples that a locus need to be present in to be included
  
--loci_file LOCI_FILE        Specify file with ids for loci to include
-
--subsample SUBSAMPLE        Specify level at which to subsmaple
+-subsample SUBSAMPLE        Specify coverage level at which to subsample
+ 
+-keep_haplotypes            If this is used, POGENOM will not split haplotypes into single-nucleotide variants, which is otherwise the default behaviour
+ 
+-vcf_version                Specify VCF file format version. Can be set to 4.2 or 4.1 (default)
 
 -h							Print this help message
 
@@ -50,7 +55,6 @@ $min_found_in = 1;
 $min_count = 2;
 $vcf_file = undef;
 $outprefix = undef;
-$subsample_level = undef;
 $reference = undef;
 $keep_haplotypes = undef;
 $use_pseudocounts = undef;
@@ -58,7 +62,7 @@ $subsample = undef;
 $vcf_version = "4.1";
 $na_if_missing_loci = 1;
 
-&GetOptions('vcf_file=s' => \$vcf_file, 'vcf_version=s' => \$vcf_version, 'gff_file=s' => \$gff_file, 'genetic_code_file=s' => \$genetic_code_file, 'o=s' => \$outprefix, 'min_count=i' => \$min_count, 'min_found=i' => \$min_found_in, 'sub=i' => \$subsample_level, 'ref=s' => \$reference, 'genome_size=i' => \$genome_size, 'keep_haplotypes!' => \$keep_haplotypes, 'loci_file=s' => \$loci_file, 'subsample=s' => \$subsample, 'use_pseudocounts' => \$use_pseudocounts, 'h!' => \$help);
+&GetOptions('vcf_file=s' => \$vcf_file, 'vcf_version=s' => \$vcf_version, 'gff_file=s' => \$gff_file, 'genetic_code_file=s' => \$genetic_code_file, 'o=s' => \$outprefix, 'min_count=i' => \$min_count, 'min_found=i' => \$min_found_in, 'ref=s' => \$reference, 'genome_size=i' => \$genome_size, 'keep_haplotypes!' => \$keep_haplotypes, 'loci_file=s' => \$loci_file, 'subsample=s' => \$subsample, 'use_pseudocounts' => \$use_pseudocounts, 'h!' => \$help);
 
 if (!$outprefix) {
     system ('perldoc', $0);
