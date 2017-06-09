@@ -1,12 +1,15 @@
 # POGENOM
 Population genomics from metagenomes
 
+----
 
 ### Usage (minimum input)
 
+Either:
+
 `perl pogenom.pl -vcf_file VCF_FILE -o OUTPUT_FILES_PREFIX -genome_size GENOME_SIZE [-h]`
 
-OR:
+Or:
 
 `perl pogenom.pl -vcf_file VCF_FILE -o OUTPUT_FILES_PREFIX -gff_file GFF_FILE [-h]`
 
@@ -18,9 +21,9 @@ OR:
 
 `-o OUTPUT_FILES_PREFIX`         Specify the prefix of the output file name(s) (overwrites existing files with same names)
 
-`-genome_size GENOME_SIZE`      Specify genome size (in bp; integer). Not required if -gff_file is given
+`-genome_size GENOME_SIZE`      Specify genome size (in bp; integer). Not required if `-gff_file` is given
 
-`-gff_file GFF_FILE`            Specify gff file. Either this or genome_size must be given.
+`-gff_file GFF_FILE`            Specify gff file. Either this or `-genome_size` must be given.
 
 
 
@@ -36,10 +39,11 @@ OR:
 
 `-h`							To print help message on screen
 
+----
 
 ### Citing POGENOM
 
 POGENOM doesn't have a paper yet, meanwhile please cite it like this:
 
-Envgen (2017). POGENOM: population genomes from metagenomes. https://github.com/EnvGen/POGENOM.
+Envgen (2017). POGENOM: population genomics from metagenomes. https://github.com/EnvGen/POGENOM.
 
