@@ -3,7 +3,7 @@ Population genomics from metagenomes
 
 
 
-# USAGE (minimum input)
+## Usage (minimum input)
 
 perl pogenom.pl -vcf_file VCF_FILE -o OUTPUT_FILES_PREFIX -genome_size GENOME_SIZE [-h]
 
@@ -13,7 +13,7 @@ perl pogenom.pl -vcf_file VCF_FILE -o OUTPUT_FILES_PREFIX -gff_file GFF_FILE [-h
 
 
 
-# POSITIONAL ARGUMENTS
+## Positional arguments
 
 -vcf_file VCF_FILE          Specify vcf file with data from a single or multiple samples
 
@@ -25,7 +25,7 @@ perl pogenom.pl -vcf_file VCF_FILE -o OUTPUT_FILES_PREFIX -gff_file GFF_FILE [-h
 
 
 
-# OPIONAL ARGUMENTS
+## Optinal arguments
 
 -min_count MIN_COUNT        Specify minimum coverage for a locus to be included for the sample
 
@@ -38,7 +38,7 @@ perl pogenom.pl -vcf_file VCF_FILE -o OUTPUT_FILES_PREFIX -gff_file GFF_FILE [-h
 -h							To print help message on screen
 
 
-# CITING
+# Citing POGENOM
 
 POGENOM doesn't have a paper yet, meanwhile please cite it like this:
 
