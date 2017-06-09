@@ -15,40 +15,40 @@ Download the latest POGENOM distribution from https://github.com/EnvGen/POGENOM/
 
 Either:
 
-`perl pogenom.pl -vcf_file VCF_FILE -o OUTPUT_FILES_PREFIX -genome_size GENOME_SIZE [-h]`
+`perl pogenom.pl --vcf_file VCF_FILE --out OUTPUT_FILES_PREFIX --genome_size GENOME_SIZE [-h]`
 
 Or:
 
-`perl pogenom.pl -vcf_file VCF_FILE -o OUTPUT_FILES_PREFIX -gff_file GFF_FILE [-h]`
+`perl pogenom.pl -vcf_file VCF_FILE --out OUTPUT_FILES_PREFIX --gff_file GFF_FILE [-h]`
 
 
 
 ### Required arguments
 
-`-vcf_file VCF_FILE`            Specify vcf file with data from a single or multiple samples.
+`--vcf_file VCF_FILE`            Specify vcf file with data from a single or multiple samples.
 
-`-o OUTPUT_FILES_PREFIX`        Specify the prefix of the output file name(s) (overwrites existing files with same names).
+`--out OUTPUT_FILES_PREFIX`        Specify the prefix of the output file name(s) (overwrites existing files with same names).
 
-`-genome_size GENOME_SIZE`      Specify genome size (in bp; integer). Not required if `-gff_file` is given.
+`--genome_size GENOME_SIZE`      Specify genome size (in bp; integer). Not required if `--gff_file` is given.
 
 
 
 ### Optional arguments
 
-`-gff_file GFF_FILE`            Specify gff file. Either this or `-genome_size` must be given.
+`--gff_file GFF_FILE`            Specify gff file. Either this or `--genome_size` must be given.
 
-`-genetic_code_file GENETIC_CODE_FILE` Specify genetic code file. E.g. `standard_genetic_code.txt` in the POGENOM distribution.
+`--genetic_code_file GENETIC_CODE_FILE` Specify genetic code file. E.g. `standard_genetic_code.txt` in the POGENOM distribution.
 
-`-loci_file LOCI_FILE`          Specify file with ids for loci to include.
+`--loci_file LOCI_FILE`          Specify file with ids for loci to include.
 
-`-min_count MIN_COUNT`          Specify minimum coverage for a locus to be included for the sample.
+`--min_count MIN_COUNT`          Specify minimum coverage for a locus to be included for the sample.
 
-`-min_found MIN_FOUND_IN`       Specify minimum number samples that a locus need to be present in to be included.
+`--min_found MIN_FOUND_IN`       Specify minimum number samples that a locus need to be present in to be included.
 
-`-subsample SUBSAMPLE`          Specify coverage level at which to subsample.
+`--subsample SUBSAMPLE`          Specify coverage level at which to subsample.
 
-`-keep_haplotypes`              If this is used, POGENOM will not split haplotypes into single-nucleotide variants, which is otherwise the default behaviour.
-`-vcf_version`                  Specify VCF file format version. Can be set to 4.2 or 4.1 (default).
+`--keep_haplotypes`              If this is used, POGENOM will not split haplotypes into single-nucleotide variants, which is otherwise the default behaviour.
+`--vcf_version`                  Specify VCF file format version. Can be set to 4.2 or 4.1 (default).
 
 `-h`							To print help message on screen.
 
