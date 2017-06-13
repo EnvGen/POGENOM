@@ -168,7 +168,7 @@ print"\n### Finished pogenom succesfully ###\n\n";
 ####################
 
 sub read_loci_to_include {
-    open (INFILE, "$loci_file") || die ("Can't open $loci_file");
+    open (INFILE, "$loci_file") || die ("Error: can't open $loci_file");
     while (<INFILE>) {
         chomp;
         $row = $_;
@@ -184,7 +184,7 @@ sub read_loci_to_include {
 sub read_gff {
     $fasta_started = 0;
     $seq = "";
-    open (INFILE, "$gff_file") || die ("Can't open $gff_file");
+    open (INFILE, "$gff_file") || die ("Error: can't open $gff_file");
     print"Reading $gff_file\n";
     while (<INFILE>) {
         chomp;
@@ -279,7 +279,7 @@ sub read_gff {
 }
 
 sub read_genetic_code {
-    open(INFILE, "$genetic_code_file") || die ("could not open $genetic_code_file");
+    open(INFILE, "$genetic_code_file") || die ("Error: can't open $genetic_code_file");
     print"Reading $genetic_code_file\n";
     while (<INFILE>) {
         chomp;
@@ -294,7 +294,7 @@ sub get_snp_data_combined_vcf {
     %nt = ('A', 1, 'T', 1, 'C', 1, 'G', 1);
     @samples = ();
     @samples_plus = ();
-    open (INFILE, "$vcf_file") || die ("Can't open $vcf_file");
+    open (INFILE, "$vcf_file") || die ("Error: can't open $vcf_file");
     print"Reading $vcf_file\n";
     while (<INFILE>) {
         #chomp;
@@ -381,7 +381,7 @@ sub get_snp_data_combined_vcf_split_haplotypes {
     %nt = ('A', 1, 'T', 1, 'C', 1, 'G', 1);
     @samples = ();
     @samples_plus = ();
-    open (INFILE, "$vcf_file") || die ("Can't open $vcf_file");
+    open (INFILE, "$vcf_file") || die ("Error: can't open $vcf_file");
     print"Reading $vcf_file\n";
     print"Haplotypes will be split into individual bases\n";
     while (<INFILE>) {
@@ -727,8 +727,12 @@ sub calc_fst { # is it more logical to only include the loci where any inter-pi 
             $sample_sample_pi{$sample2}{$sample1} = $inter_pi;
             $sample1_pi = $sample1_pi/$genome_size;
             $sample2_pi = $sample2_pi/$genome_size;
-            #$fst = 1 - 0.5*($sample_pi{$sample1} + $sample_pi{$sample2})/$inter_pi; # intra pi values only based on all loci
-            $fst = 1 - 0.5*($sample1_pi + $sample2_pi)/$inter_pi; # intra pi values only based on shared loci
+            if ($inter_pi > 0) {
+                #$fst = 1 - 0.5*($sample_pi{$sample1} + $sample_pi{$sample2})/$inter_pi; # intra pi values only based on all loci
+                $fst = 1 - 0.5*($sample1_pi + $sample2_pi)/$inter_pi # intra pi values only based on shared loci
+            } else {
+                $fst = "NA";
+            }
             $fst = sprintf("%.4f", $fst);
             $sample_sample_fst{$sample1}{$sample2} = $fst;
             $sample_sample_fst{$sample2}{$sample1} = $fst;
@@ -788,7 +792,7 @@ sub calc_per_gene_fst {
                         $fst = 1 - 0.5*($sample1_pi + $sample2_pi)/$inter_pi; # intra pi based on only shared loci
                         $fst = sprintf("%.4f", $fst);
                     } else {
-                        $fst = NA; # i.e. no intra-pi in any of the two samples and consequently no inter-pi.
+                        $fst = "NA"; # i.e. no intra-pi in any of the two samples and consequently no inter-pi.
                     }
                     $sample_sample_gene_fst{$sample1}{$sample2}{$gene} = $fst;
                     $sample_sample_gene_fst{$sample2}{$sample1}{$gene} = $fst;
@@ -849,7 +853,7 @@ sub calc_per_gene_aminoacid_fst {
                         $fst = 1 - 0.5*($sample1_pi + $sample2_pi)/$inter_pi; # intra pi based on only shared loci
                         $fst = sprintf("%.4f", $fst);
                     } else {
-                        $fst = NA; # i.e. no intra-pi in any of the two samples and consequently no inter-pi.
+                        $fst = "NA"; # i.e. no intra-pi in any of the two samples and consequently no inter-pi.
                     }
                     $sample_sample_gene_aminoacid_fst{$sample1}{$sample2}{$gene} = $fst;
                     $sample_sample_gene_aminoacid_fst{$sample2}{$sample1}{$gene} = $fst;
