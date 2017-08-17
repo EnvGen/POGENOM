@@ -789,7 +789,7 @@ sub calc_per_gene_fst {
                     $sample2_pi = $sample2_pi/$gene_length{$gene};
                     if ($inter_pi > 0) {
                         #$fst = 1 - 0.5*($sample_gene_pi{$sample1}{$gene} + $sample_gene_pi{$sample2}{$gene})/$inter_pi; # intra pi based on all loci
-                        $fst = 1 - 0.5*($sample1_pi + $sample2_pi)/$inter_pi; # intra pi based on only shared loci
+                        $fst = 1 - 0.5*($sample1_pi + $sample2_pi)/$inter_pi; # based on only shared loci
                         $fst = sprintf("%.4f", $fst);
                     } else {
                         $fst = "NA"; # i.e. no intra-pi in any of the two samples and consequently no inter-pi.
@@ -821,7 +821,7 @@ sub calc_per_gene_aminoacid_fst {
                     $inter_pi = 0;
                     $sample1_pi = $sample2_pi = 0;
                     foreach $locus (@loci) {
-                        #print"Locus $locus\n";
+                        #print"\nLocus $locus\n";
                         next if (!defined $sample_locus_allel_counts{$sample1}{$locus});
                         next if (!defined $sample_locus_allel_counts{$sample2}{$locus});
                         @peptides1 = (keys %{$sample_locus_gene_peptide_counts{$sample1}{$locus}{$gene}});
@@ -835,7 +835,7 @@ sub calc_per_gene_aminoacid_fst {
                             #print"Counts1: $counts_1\n";
                             for ($j = 0; $j < @peptides2; $j++) {
                                 next if ($peptides1[$i] eq $peptides2[$j]);
-                                #print"Allele 2: $peptides2[$j]\n";
+                                #print"Peptide 2: $peptides2[$j]\n";
                                 $counts_2 = $sample_locus_gene_peptide_counts{$sample2}{$locus}{$gene}{$peptides2[$j]};
                                 #print"Counts2: $counts_2\n";
                                 $inter_pi = $inter_pi + ($counts_1/$tot_count1)*($counts_2/$tot_count2);
@@ -848,16 +848,18 @@ sub calc_per_gene_aminoacid_fst {
                     #print"$gene $sample1 $sample2 $inter_pi\n";
                     $sample_sample_gene_aminoacid_pi{$sample1}{$sample2}{$gene} = $inter_pi;
                     $sample_sample_gene_aminoacid_pi{$sample2}{$sample1}{$gene} = $inter_pi;
+                    $sample1_pi = $sample1_pi/$gene_length{$gene};
+                    $sample2_pi = $sample2_pi/$gene_length{$gene};
                     if ($inter_pi > 0) {
                         #$fst = 1 - 0.5*($sample_gene_aminoacid_pi{$sample1}{$gene} + $sample_gene_aminoacid_pi{$sample2}{$gene})/$inter_pi;
-                        $fst = 1 - 0.5*($sample1_pi + $sample2_pi)/$inter_pi; # intra pi based on only shared loci
+                        $fst = 1 - 0.5*($sample1_pi + $sample2_pi)/$inter_pi; # based on only shared loci
                         $fst = sprintf("%.4f", $fst);
                     } else {
                         $fst = "NA"; # i.e. no intra-pi in any of the two samples and consequently no inter-pi.
                     }
                     $sample_sample_gene_aminoacid_fst{$sample1}{$sample2}{$gene} = $fst;
                     $sample_sample_gene_aminoacid_fst{$sample2}{$sample1}{$gene} = $fst;
-                    #print"$gene $sample1 $sample2 $sample_gene_aminoacid_pi{$sample1}{$gene} $sample_gene_aminoacid_pi{$sample2}{$gene} $inter_pi $fst\n";
+                    #print"$gene $sample1 $sample2 $sample1_pi $sample2_pi $inter_pi $fst\n"; # based on only shared loci
                 }
             }
         }
