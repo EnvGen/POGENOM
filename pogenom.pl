@@ -13,6 +13,10 @@ perl pogenom.pl --vcf_file VCF_FILE --out OUTPUT_FILES_PREFIX --genome_size GENO
  Or:
  
 perl pogenom.pl --vcf_file VCF_FILE --out OUTPUT_FILES_PREFIX --gff_file GFF_FILE [--help]
+ 
+ Or:
+
+perl pogenom.pl --vcf_file VCF_FILE --out OUTPUT_FILES_PREFIX --fasta_file FASTA_FILE [--help]
 
 
 =head1 REQUIRED ARGUMENTS
@@ -27,21 +31,23 @@ perl pogenom.pl --vcf_file VCF_FILE --out OUTPUT_FILES_PREFIX --gff_file GFF_FIL
 
 =head1 OPIONAL ARGUMENTS
 
---gff_file GFF_FILE          Specify gff file. Either this or -genome_size must be given
+--gff_file GFF_FILE          Specify gff file. Either this, --genome_size or --fasta_file must be given
+ 
+--fasta_file FASTA_FILE      Specify fasta file. Either this, --genome_size or --gff_file must be given
  
 --genetic_code_file GENETIC_CODE_FILE Specify genetic code file. E.g. standard_genetic_code.txt in the POGENOM distribution
  
---min_count MIN_COUNT        Specify minimum coverage for a locus to be included for the sample
+--min_count MIN_COUNT        Specify minimum coverage of a locus to be included for the sample
  
---loci_file LOCI_FILE        Specify file with ids for loci to include
+--loci_file LOCI_FILE        Specify file with ids of loci to be included
  
---min_found MIN_FOUND_IN     Specify minimum number samples that a locus need to be present in to be included
+--min_found MIN_FOUND_IN     Specify minimum number of samples that a locus need to be present in to be included
  
 --subsample SUBSAMPLE        Specify coverage level at which to subsample
  
---keep_haplotypes            If this is used, POGENOM will not split haplotypes into single-nucleotide variants, which is otherwise the default behaviour
+--keep_haplotypes            If this is used, POGENOM will not split haplotypes into single-nucleotide variants, which is otherwise the default
  
---vcf_version                Specify VCF file format version. Can be set to 4.2 or 4.1 (default)
+--vcf_format                 Specify VCF file format version. Can be set to freebayes (default) or GATK
 
 --help						 Prints this help message
 
@@ -56,15 +62,18 @@ $genome_size = undef;
 $min_found_in = 1;
 $min_count = 2;
 $vcf_file = undef;
+$gff_file = undef;
+$fasta_file = undef;
+$genetic_code_file = undef;
 $outprefix = undef;
 $reference = undef;
 $keep_haplotypes = undef;
 $use_pseudocounts = undef;
 $subsample = undef;
-$vcf_version = "4.1";
+$vcf_format = "freebayes";
 $na_if_missing_loci = 1;
 
-&GetOptions('vcf_file=s' => \$vcf_file, 'vcf_version=s' => \$vcf_version, 'gff_file=s' => \$gff_file, 'genetic_code_file=s' => \$genetic_code_file, 'output=s' => \$outprefix, 'min_count=i' => \$min_count, 'min_found=i' => \$min_found_in, 'ref=s' => \$reference, 'genome_size=i' => \$genome_size, 'keep_haplotypes!' => \$keep_haplotypes, 'loci_file=s' => \$loci_file, 'subsample=s' => \$subsample, 'use_pseudocounts' => \$use_pseudocounts, 'h!' => \$help);
+&GetOptions('vcf_file=s' => \$vcf_file, 'vcf_format=s' => \$vcf_format, 'gff_file=s' => \$gff_file, 'fasta_file=s' => \$fasta_file, 'genetic_code_file=s' => \$genetic_code_file, 'output=s' => \$outprefix, 'min_count=i' => \$min_count, 'min_found=i' => \$min_found_in, 'ref=s' => \$reference, 'genome_size=i' => \$genome_size, 'keep_haplotypes!' => \$keep_haplotypes, 'loci_file=s' => \$loci_file, 'subsample=s' => \$subsample, 'use_pseudocounts' => \$use_pseudocounts, 'h!' => \$help);
 
 if (!$outprefix) {
     system ('perldoc', $0);
@@ -78,37 +87,31 @@ if (!$vcf_file) {
     system ('perldoc', $0);
     exit;
 }
-if (!$genome_size and !$gff_file) {
+if (!$genome_size and !$gff_file and !$fasta_file) {
     system ('perldoc', $0);
     exit;
 }
 if ($min_count < 2) {
-    print"Error: min_count cannot be set to a number < 2\n";
-    exit;
-}
-if ($vcf_version eq "4.1") {
-    #fileformat=VCFv4.1
-    $tot_count_ix = 1;
-    $ref_count_ix = 2;
-    $alt_count_ix = 4;
-} elsif ($vcf_version eq "4.2") {
-    #fileformat=VCFv4.2
-    $tot_count_ix = 1;
-    $ref_count_ix = 3;
-    $alt_count_ix = 5;
-} else {
-    print"Error: Unrecognized vcf_version. Should be either 4.1 (default) or 4.2\n";
+    print"Error: min_count cannot be set to <2\n";
     exit;
 }
 
+if ($vcf_format ne "freebayes") {
+    if ($vcf_format ne "GATK") {
+        print"\nError: Unrecognized vcf_format. Should be either freebayes (default) or GATK\n\n";
+        exit;
+    }
+}
 
 ####################
 
 print"\n### Running pogenom ###\n";
 if ($genome_size) {
     print"genome_size set to $genome_size\n";
-} else {
-    print"genome_size will be calculated from GFF\n";
+} elsif ($fasta_file) {
+    print"genome_size will be calculated from sequence file\n";
+} elsif ($gff_file) {
+    print"genome_size will be calculated from GFF file\n";
 }
 print"min_count set to $min_count\n";
 print"min_found set to $min_found_in\n";
@@ -132,6 +135,10 @@ if ($subsample) {
 if ($gff_file) {
     print"\n### Reading GFF file ###\n";
     &read_gff;
+}
+if ($fasta_file) {
+    print"\n### Reading fasta sequence file ###\n";
+    &read_fasta;
 }
 if ($genetic_code_file) {
     print"\n### Reading Genetic Code file ###\n";
@@ -200,7 +207,7 @@ sub read_gff {
                 $seq = "";
             } else {
                 $seq = $seq.$_;
-                $contig_seq{$contig} = $seq;
+                $contig_seq{$contig} = uc $seq;
             }
         }
         elsif (substr($row, 0, 7) eq "##FASTA") {
@@ -219,7 +226,7 @@ sub read_gff {
             @subfields = split(/;/, $annotation);
             $gene = $subfields[0];
             if (defined $gene_start{$gene}) {
-                print"Error: Non-unique gene identifiers in GFF file. The program will exit without finishing.\n";
+                print"Error: Non-unique gene identifiers in GFF file. The program will exit without finishing.\n\n"; exit;
             }
             $gene_start{$gene} = $start;
             $gene_end{$gene} = $end;
@@ -271,9 +278,61 @@ sub read_gff {
                 }
             }
         }
-        if (!defined $genome_size) {
+    }
+    if (!$genome_size and !$fasta_file) {
+        if ($fasta_started == 1) {
             $genome_size = $temp_genome_size;
             print"Genome size calculated from GFF to $genome_size bp\n";
+        } else {
+            print"Error: Genome size could not be calculated from GFF file\n\n"; exit;
+        }
+    }
+}
+
+sub read_fasta {
+    %contig_seq = ();
+    $seq = "";
+    open (INFILE, "$fasta_file") || die ("Error: can't open $fasta_file");
+    print"Reading $fasta_file\n";
+    while (<INFILE>) {
+        chomp;
+        $row = $_;
+        if (substr($row, 0, 1) eq ">") {
+            if ($seq ne "") {
+                $contig_seq{$contig} = $seq;
+            }
+            $contig = $row;
+            #@subfields = split(/\s+/, $row);
+            #$contig = $subfields[0];
+            substr($contig, 0, 1) = "";
+            $seq = "";
+        } else {
+            $seq = $seq.$_;
+            $contig_seq{$contig} = uc $seq;
+        }
+    }
+    if (!$genome_size) {
+        $genome_size = 0;
+        foreach $contig (keys %contig_seq) {
+            $genome_size = $genome_size + length($contig_seq{$contig});
+        }
+    }
+    print"Genome size calculated from sequence file to $genome_size bp\n";
+    if (defined $gff_file) {
+        foreach $contig (@contigs) {
+            if (!defined $contig_seq{$contig}) {
+                print"\nError: Missmatch between contig id in gff and sequence file\n\n"; exit;
+            }
+            @genes = @{ $contig_genes{$contig} };
+            foreach $gene (@genes) {
+                if ($gene_strand{$gene} eq "+") {
+                    $gene_seq{$gene} = substr($contig_seq{$contig}, ($gene_start{$gene} - 1), $gene_length{$gene});
+                }
+                if ($gene_strand{$gene} eq "-") {
+                    $gene_seq{$gene} = substr($contig_seq{$contig}, ($gene_start{$gene} - 1), $gene_length{$gene});
+                    $gene_seq{$gene} = &make_revcomp($gene_seq{$gene});
+                }
+            }
         }
     }
 }
@@ -317,14 +376,44 @@ sub get_snp_data_combined_vcf {
             #print"$locus\n";
             next if (!defined $include_locus{$locus});
         }
+        @subfields = split(/:/, $fields[8]);
+        $nformat_fields = @subfields;
+        if ($vcf_format eq "GATK") {
+            $count_ix = undef;
+            for ($i = 0; $i < @subfields; $i++) {
+                $count_ix = $i if ($subfields[$i] eq "AD");
+            }
+            if (!$count_ix) {
+                print"\nError: Field AD is lacking in the Format column of the VCF file at CHROM: $contig POS: $pos\n\n"; exit;
+            }
+        } elsif ($vcf_format eq "freebayes") {
+            $tot_count_ix = $ref_count_ix = $alt_count_ix = undef;
+            for ($i = 0; $i < @subfields; $i++) {
+                #$tot_count_ix = $i if ($subfields[$i] eq "DP");
+                $ref_count_ix = $i if ($subfields[$i] eq "RO");
+                $alt_count_ix = $i if ($subfields[$i] eq "AO");
+            }
+            if (!$ref_count_ix or !$alt_count_ix) {
+                print"\nError: Either field RO or AO is lacking in the Format column of the VCF file at CHROM: $contig POS: $pos\n\n"; exit;
+            }
+        }
         $locus_found{$locus} = 0;
         for ($i = 9; $i < @fields; $i++) {
             @subfields = split(/:/, $fields[$i]);
-            if (@subfields == 7) {
-                $tot_count = $subfields[1];
-                if ($tot_count ne ".") {
+            if (@subfields == $nformat_fields) {
+                if ($vcf_format eq "GATK") {
+                    @allele_count = split(/,/, $subfields[$count_ix]);
+                } elsif ($vcf_format eq "freebayes") {
+                    @allele_count = split(/,/, $subfields[$alt_count_ix]);
+                    unshift(@allele_count, $subfields[$ref_count_ix]);
+                }
+                if ($allele_count[0] ne ".") {
+                    $tot_count = 0;
+                    for ($j = 0; $j < @allele_count; $j++) {
+                        $tot_count = $tot_count + $allele_count[$j];
+                    }
                     if ($tot_count >= $min_count) {
-                        $locus_found{$locus}++
+                        $locus_found{$locus}++;
                         #print"$locus_found{$locus}\n";
                     }
                 }
@@ -333,35 +422,38 @@ sub get_snp_data_combined_vcf {
         next if ($locus_found{$locus} < $min_found_in);
         $contig_pos{$contig}{$pos} = 1;
         $ref = $fields[3];
-        @alt = split(/,/, $fields[4]);
+        @alleles = split(/,/, $fields[4]);
+        unshift(@alleles, $ref);
         $sample_locus_totcount{'All_samples_combined'}{$locus} = 0;
-        $sample_locus_allel_counts{'All_samples_combined'}{$locus}{$ref} = 0;
         for ($i = 9; $i < @fields; $i++) {
             $sample = $samples[$i - 9];
             @subfields = split(/:/, $fields[$i]);
-            next if (@subfields == 1);
-            $ref_count = $subfields[$ref_count_ix];
-            $tot_count = $subfields[$tot_count_ix];
-            next if ($tot_count eq ".");
+            next if (@subfields != $nformat_fields);
+            if ($vcf_format eq "GATK") {
+                @allele_count = split(/,/, $subfields[$count_ix]);
+            } elsif ($vcf_format eq "freebayes") {
+                @allele_count = split(/,/, $subfields[$alt_count_ix]);
+                unshift(@allele_count, $subfields[$ref_count_ix])
+            }
+            $tot_count = 0;
+            if ($allele_count[0] ne ".") {
+                for ($j = 0; $j < @allele_count; $j++) {
+                    $tot_count = $tot_count + $allele_count[$j];
+                }
+            }
+            next if ($allele_count[0] eq ".");
             next if ($tot_count < $min_count);
-            @alt_count = split(/,/, $subfields[$alt_count_ix]);
             $sample_locus_ref{$sample}{$locus} = $ref;
             $sample_locus_totcount{$sample}{$locus} = $tot_count;
-            $sample_locus_allel_counts{$sample}{$locus}{$ref} = $ref_count;
             $sample_locus_totcount{'All_samples_combined'}{$locus} = $sample_locus_totcount{'All_samples_combined'}{$locus} + $tot_count;
-            $sample_locus_allel_counts{'All_samples_combined'}{$locus}{$ref} = $sample_locus_allel_counts{'All_samples_combined'}{$locus}{$ref} + $ref_count;
             #print"Ref: #$ref# $ref_count\n";
-            for ($j = 0; $j < @alt; $j++) {
-                $sample_locus_allel_counts{$sample}{$locus}{$alt[$j]} = $alt_count[$j];
-                $sample_locus_allel_counts{'All_samples_combined'}{$locus}{$alt[$j]} = 0 if (!defined $sample_locus_allel_counts{'All_samples_combined'}{$locus}{$alt[$j]});
-                $sample_locus_allel_counts{'All_samples_combined'}{$locus}{$alt[$j]} = $sample_locus_allel_counts{'All_samples_combined'}{$locus}{$alt[$j]} + $alt_count[$j];
-                #print"Alt: #$alt[$j]# $alt_count[$j]\n";
-                #print"$sample_locus_allel_counts{$sample}{$locus}{$alt[$j]}\n";
+            for ($j = 0; $j < @alleles; $j++) {
+                $sample_locus_allel_counts{$sample}{$locus}{$alleles[$j]} = $allele_count[$j];
+                $sample_locus_allel_counts{'All_samples_combined'}{$locus}{$alleles[$j]} = 0 if (!defined $sample_locus_allel_counts{'All_samples_combined'}{$locus}{$alleles[$j]});
+                $sample_locus_allel_counts{'All_samples_combined'}{$locus}{$alleles[$j]} = $sample_locus_allel_counts{'All_samples_combined'}{$locus}{$alleles[$j]} + $allele_count[$j];
             }
         }
-        
-        $contig_pos{$contig}{$pos} = 0 if (!defined $nt{$ref});
-        foreach $string (@alt) {
+        foreach $string (@alleles) {
             $contig_pos{$contig}{$pos} = 0 if (!defined $nt{$string});
         }
     }
@@ -392,41 +484,68 @@ sub get_snp_data_combined_vcf_split_haplotypes {
         if (substr($row, 0, 6) eq "#CHROM") {
             for ($i = 9; $i < @fields; $i++) {
                 $samples[$i - 9] = $fields[$i];
-                #print"$fields[$i]\n";
             }
             @samples_plus = (@samples, 'All_samples_combined');
         }
         next if (substr($row, 0, 1) eq "#");
-        #next if (@fields == 1);
         $contig = $fields[0];
         $pos = $fields[1];
         $ref = $fields[3];
-        @alt = split(/,/, $fields[4]);
+        @alleles = split(/,/, $fields[4]);
+        unshift(@alleles, $ref);
         $indel = undef;
-        for ($i = 0; $i < @alt; $i++) {
-            if (length($alt[$i]) != length($ref)) {
+        for ($i = 1; $i < @alleles; $i++) {
+            if (length($alleles[$i]) != length($ref)) {
                 $indel = 1;
             }
         }
         next if $indel;
         #print"Ref: $ref Alt: @alt\n";
+        @subfields = split(/:/, $fields[8]);
+        $nformat_fields = @subfields;
+        if ($vcf_format eq "GATK") {
+            $count_ix = undef;
+            for ($i = 0; $j < @subfields; $i++) {
+                $count_ix = $i if ($subfields[$i] eq "AD");
+            }
+            if (!$count_ix) {
+                print"\nError: Field AD is lacking in the Format column of the VCF file at CHROM: $contig POS: $pos\n\n"; exit;
+            }
+        } elsif ($vcf_format eq "freebayes") {
+            $tot_count_ix = $ref_count_ix = $alt_count_ix = undef;
+            for ($i = 0; $i < @subfields; $i++) {
+                #$tot_count_ix = $i if ($subfields[$i] eq "DP");
+                $ref_count_ix = $i if ($subfields[$i] eq "RO");
+                $alt_count_ix = $i if ($subfields[$i] eq "AO");
+            }
+            if (!$ref_count_ix or !$alt_count_ix) {
+                print"\nError: Either field RO or AO is lacking in the Format column of the VCF file at CHROM: $contig POS: $pos\n\n"; exit;
+            }
+        }
+        
         for ($i = 0; $i < length($ref); $i++) {
             $modpos = $pos + $i;
             $locus = $contig."|".$modpos;
-            #print"#$locus#\n";
             if ($loci_file) {
                 next if (!defined $include_locus{$locus});
-                #print"$locus\n";
             }
             $locus_found{$locus} = 0;
             for ($j = 9; $j < @fields; $j++) {
                 @subfields = split(/:/, $fields[$j]);
-                if (@subfields > 1) {
-                    $tot_count = $subfields[1];
-                    if ($tot_count ne ".") {
+                if (@subfields == $nformat_fields) {
+                    if ($vcf_format eq "GATK") {
+                        @allele_count = split(/,/, $subfields[$count_ix]);
+                    } elsif ($vcf_format eq "freebayes") {
+                        @allele_count = split(/,/, $subfields[$alt_count_ix]);
+                        unshift(@allele_count, $subfields[$ref_count_ix]);
+                    }
+                    if ($allele_count[0] ne ".") {
+                        $tot_count = 0;
+                        for ($k = 0; $k < @allele_count; $k++) {
+                            $tot_count = $tot_count + $allele_count[$k];
+                        }
                         if ($tot_count >= $min_count) {
                             $locus_found{$locus}++;
-                            #print"$locus_found{$locus}\n";
                         }
                     }
                 }
@@ -435,35 +554,41 @@ sub get_snp_data_combined_vcf_split_haplotypes {
             $contig_pos{$contig}{$modpos} = 1;
             $subref = substr($ref, $i, 1);
             $contig_pos{$contig}{$modpos} = 0 if (!defined $nt{$subref});
-            $sample_locus_allel_counts{'All_samples_combined'}{$locus}{$subref} = 0;
             $sample_locus_totcount{'All_samples_combined'}{$locus} = 0;
             for ($j = 9; $j < @fields; $j++) {
                 $sample = $samples[$j - 9];
                 @subfields = split(/:/, $fields[$j]);
-                next if (@subfields == 1);
-                $ref_count = $subfields[$ref_count_ix];
-                $tot_count = $subfields[$tot_count_ix];
-                next if ($tot_count eq ".");
+                next if (@subfields != $nformat_fields);
+                if ($vcf_format eq "GATK") {
+                    @allele_count = split(/,/, $subfields[$count_ix]);
+                } elsif ($vcf_format eq "freebayes") {
+                    @allele_count = split(/,/, $subfields[$alt_count_ix]);
+                    unshift(@allele_count, $subfields[$ref_count_ix])
+                }
+                $tot_count = 0;
+                if ($allele_count[0] ne ".") {
+                    for ($k = 0; $k < @allele_count; $k++) {
+                        $tot_count = $tot_count + $allele_count[$k];
+                    }
+                }
+                next if ($allele_count[0] eq ".");
                 next if ($tot_count < $min_count);
-                @alt_count = split(/,/, $subfields[$alt_count_ix]);
                 $sample_locus_ref{$sample}{$locus} = $subref;
                 $sample_locus_totcount{$sample}{$locus} = $tot_count;
-                $sample_locus_allel_counts{$sample}{$locus}{$subref} = $ref_count;
                 $sample_locus_totcount{'All_samples_combined'}{$locus} = $sample_locus_totcount{'All_samples_combined'}{$locus} + $tot_count;
-                $sample_locus_allel_counts{'All_samples_combined'}{$locus}{$subref} = $sample_locus_allel_counts{'All_samples_combined'}{$locus}{$subref} + $ref_count;
                 #print"    Sample: $sample Subpos: $i Modpos: $modpos\n";
                 #print"        Subref: $subref $ref_count\n";
-                for ($k = 0; $k < @alt; $k++) {
-                    $subalt = substr($alt[$k], $i, 1);
-                    if (defined $sample_locus_allel_counts{$sample}{$locus}{$subalt}) {
-                        $sample_locus_allel_counts{$sample}{$locus}{$subalt} = $sample_locus_allel_counts{$sample}{$locus}{$subalt} + $alt_count[$k];
+                for ($k = 0; $k < @alleles; $k++) {
+                    $subal = substr($alleles[$k], $i, 1);
+                    if (defined $sample_locus_allel_counts{$sample}{$locus}{$subal}) {
+                        $sample_locus_allel_counts{$sample}{$locus}{$subal} = $sample_locus_allel_counts{$sample}{$locus}{$subal} + $allele_count[$k];
                     } else {
-                        $sample_locus_allel_counts{$sample}{$locus}{$subalt} = $alt_count[$k];
+                        $sample_locus_allel_counts{$sample}{$locus}{$subal} = $allele_count[$k];
                     }
-                    $sample_locus_allel_counts{'All_samples_combined'}{$locus}{$subalt} = 0 if (!defined $sample_locus_allel_counts{'All_samples_combined'}{$locus}{$subalt});
-                    $sample_locus_allel_counts{'All_samples_combined'}{$locus}{$subalt} = $sample_locus_allel_counts{'All_samples_combined'}{$locus}{$subalt} + $alt_count[$k];
-                    $contig_pos{$contig}{$modpos} = 0 if (!defined $nt{$subalt});
-                    #print"        Subalt: $subalt $alt_count[$k] $sample_locus_allel_counts{$sample}{$locus}{$subalt}\n";
+                    $sample_locus_allel_counts{'All_samples_combined'}{$locus}{$subal} = 0 if (!defined $sample_locus_allel_counts{'All_samples_combined'}{$locus}{$subal});
+                    $sample_locus_allel_counts{'All_samples_combined'}{$locus}{$subal} = $sample_locus_allel_counts{'All_samples_combined'}{$locus}{$subal} + $allele_count[$k];
+                    $contig_pos{$contig}{$modpos} = 0 if (!defined $nt{$subal});
+                    #print"        Subal: $subal $allele_count[$k] $sample_locus_allel_counts{$sample}{$locus}{$subal}\n";
                 }
                 
             }
@@ -488,6 +613,7 @@ sub get_snp_data_combined_vcf_split_haplotypes {
         exit;
     }
 }
+
 
 sub subsample_allele_counts {
     foreach $sample (@samples_plus) {
