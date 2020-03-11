@@ -57,6 +57,7 @@ MAke sure that MAG name follows the  syntax::
 
 Run the pipeline
 ^^^^^^^^^^^^^^^^
+
 If you are using conda, activate the pipeline environment by typing::
 
     conda activate ip_env
@@ -83,7 +84,7 @@ In the "Input_POGENOM_config.json" file, set the parameters to be used. It conta
 "fraction": "0.15",
   #Fraction of reads to be subsampled when running the pipeline using dataset: "prefilt". 
   Values lower then 15% will difficult the selection of samples with coverage close to the min_coverage 10. 
-  Values higher then 25% will considerible increase the size of the directory PREFILT/Reads/ and the running time.  
+  Values higher then 25% will considerable increase the size of the directory PREFILT/Reads/ and the running time.  
 
 "mags_ext": ".fa",
   #extention used on your MAGs
