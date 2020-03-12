@@ -23,7 +23,7 @@ Example of filename: 04_mergeable/<dataset>/<MAG_name>/<sample_name>_<MAG_name>_
 The corresponding log file for these steps is(are) log_files/<dataset>_MAGs_coverage_breadth.log or log_files/coverage_breadth_<mag_name>.log (when dataset: "prefilt")
 
 E) 05_BAM_merged.
-When the number of BAM files in 04_mergeable/ directory is more than 1, the files are merged into one BAM file per MAG. The read group (@RG) information from each BAM file, corresponding to the sample name, is $Example of filename: 05_BAM_merged/<dataset>/<MAG_name>_merged_sorted_position.bam                                                                                                                                 
+When the number of BAM files in 04_mergeable/ directory is more than 1, the files are merged into one BAM file per MAG. The read group (@RG) information from each BAM file, corresponding to the sample name, is $Example of filename: 05_BAM_merged/<dataset>/<MAG_name>_merged_sorted_position.bam
 
 
 Intermediate files when dataset: "prefilt"
@@ -31,14 +31,14 @@ Intermediate files when dataset: "prefilt"
 
 The directory PREFILT/ is created and contains:
 
-02_MAPPING, 03_MPILEUP, Reads
+02_MAPPING, 03_MPILEUP
 
 and the files:
 
 Estimated_median_cov_per_sample.tsv, and Selected_samples_MAGs.tmp (The names of the files describe their containing)
 
 The directories, 02_MAPPING, and 03_MPILEUP have the same format as described above (Intermediate files).
-The reads used to generated those files are the Reads subsets, which are stored in the folder PREFILT/Reads/.
+The reads used to generated those files are the Reads subsets, which are stored in the folder <temp_sub_Reads_dir>/Reads/.
 
 The corresponding log file for these steps is log_files/samples_filter.log
 

@@ -21,10 +21,10 @@ Create a directory for each dataset::
 There must be a least one dataset.
 
 Copy or link (recommended) reads to this directory::
-                                                                                                                                                           
+
     cp path/to/reads/* <dataset_name>/. or ln -s path/to/reads/* .
 
-MAke sure that reads name follows the syntax:
+Make sure that reads name follows the syntax:
 
 forward reads::
 
@@ -50,14 +50,13 @@ Copy or link (recommended) MAGs to this file::
 
     cp path/to/MAGs/* <dataset_name>/. or ln -s path/to/MAGs/* <dataset_name>/.
 
-MAke sure that MAG name follows the  syntax::
+Make sure that MAG name follows the syntax::
 
     <MAG_name><mags_ext>, e.g., P6071_521_bin125.fa, where MAG_name = P6071_521_bin125, and mags_ext = .fa
 
 
 Run the pipeline
 ^^^^^^^^^^^^^^^^
-
 If you are using conda, activate the pipeline environment by typing::
 
     conda activate ip_env
@@ -82,9 +81,12 @@ In the "Input_POGENOM_config.json" file, set the parameters to be used. It conta
   #Number of threads
 
 "fraction": "0.15",
-  #Fraction of reads to be subsampled when running the pipeline using dataset: "prefilt". 
-  Values lower then 15% will difficult the selection of samples with coverage close to the min_coverage 10. 
-  Values higher then 25% will considerable increase the size of the directory PREFILT/Reads/ and the running time.  
+  #Fraction of reads to be subsampled when running the pipeline using dataset: "prefilt".
+  Values lower then 15% will difficult the selection of samples with coverage close to the min_coverage 10.
+  Values higher then 25% will considerable increase the size of the directory <temp_sub_Reads_dir>/Reads/ and the running time.
+
+"temp_sub_Reads_dir": "PREFILT",
+  #Directory storing Reads subsampled, when running the pipeline using dataset: "prefilt". The size of this directory may be hundreds of GBs.
 
 "mags_ext": ".fa",
   #extention used on your MAGs
@@ -93,7 +95,8 @@ In the "Input_POGENOM_config.json" file, set the parameters to be used. It conta
   #extention used on your Reads, after R1. For instance, ".fq.gz" if reads are named "sample_R1.fq.gz, sample_R2.fq.gz"
 
 "fwd_index": "_R1",
-  #index used to define foward reads in your sample dataset
+  #index used to define forward reads in your sample dataset
+  
 "rev_index": "_R2",
   #index used to define reverse reads in your dataset
 
