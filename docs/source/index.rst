@@ -20,11 +20,6 @@ Contents
    Output_description
    
 
-Licence
-=======
-
-FreeBSD
-
 Search
 ======
 * :ref:`search`
