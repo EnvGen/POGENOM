@@ -36,11 +36,11 @@ It may be necessary to source, with the command::
 
 Clone the repositiory from github::
 
-    git clone <pipeline repository>
+    git clone https://github.com/EnvGen/POGENOM
 
 Now, go to the directory Input_POGENOM::
 
-    cd Input_POGENOM
+    cd POGENOM/Input_POGENOM
 
 This directory contains:
 

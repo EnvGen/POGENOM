@@ -1,7 +1,7 @@
-.. Input_POGENOM documentation
+.. Input_POGENOM
 
-Input_POGENOM's documentation
-==============================
+Input_POGENOM
+=============
 
 This pipeline generates the required input files for POGENOM.
 The aim of this pipeline is to increase the reproducibility of the data analysis, and to simplify the use of POGENOM.

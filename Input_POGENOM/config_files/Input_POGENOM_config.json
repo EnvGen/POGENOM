@@ -1,0 +1,19 @@
+{
+  "workdir": "absolute/path/to/Input_POGENOM",
+  "dataset": "prefilt",
+  "threads": 20,
+  "mags_ext": ".fa",
+  "reads_ext": ".fq.gz",
+  "fwd_index": "_R1",
+  "rev_index": "_R2",
+  "fraction": "0.15",
+  "temp_sub_Reads_dir": "TEMP_IP",
+  "bowtie2_params": "--ignore-quals --mp 1,1 --np 1 --rdg 0,1 --rfg 0,1 --score-min L,0,-0.05",
+  "mapqual": 20,
+  "samtools_view_alignment_extra_filters": "-f 2 -F 1024",
+  "min_coverage": 10,
+  "min_breadth": 40,
+  "min_bsq_for_cov_median_calculation": 15,
+  "freebayes_parameters": "-C 4 -p 1 --pooled-continuous --read-max-mismatch-fraction 0.05 --min-alternate-fraction 0.01 -q 15",
+  "vcffilter_qual": "'QUAL > 20'"
+}

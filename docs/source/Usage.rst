@@ -63,7 +63,7 @@ If you are using conda, activate the pipeline environment by typing::
 
 If you are not in the working directory, go there using the command::
 
-    cd ~/Input_POGENOM
+    cd path/to/Input_POGENOM
 
 1. Set parameters in the config file
 
