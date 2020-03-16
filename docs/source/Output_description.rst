@@ -74,3 +74,4 @@ The corresponding log file for these steps is(are)::
 MAG_size files
 ^^^^^^^^^^^^^^
 The size of the MAG is stored in file <mag_name>.size (genome size: #bases). This value may be used later as input for POGENOM.
+

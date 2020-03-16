@@ -51,3 +51,4 @@ This directory contains:
 Create the virtual environment using the command::
 
     conda env create -f config_files/Input_POGENOM_conda_env_setup.yaml
+

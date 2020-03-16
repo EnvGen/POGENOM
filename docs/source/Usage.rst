@@ -161,3 +161,4 @@ When running the pipeline with dataset "prefilt", the created RAW_DATA/Reads/pre
 If you are using conda, before exiting the workflow, the environment needs to be deactivated using the following command::
 
     conda deactivate
+

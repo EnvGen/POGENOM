@@ -37,7 +37,8 @@ extensions = [
 templates_path = ['_templates']
 
 # The master toctree document.
-master_doc = 'POGENOM_index'
+#master_doc = 'POGENOM_index'
+master_doc = 'index'
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
