@@ -14,7 +14,7 @@ List of required software/packages
 Some tips for installing software
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 The easiest and recommended way to install this pipeline is through conda in an isolated environment.
-Bellow an example of how to install Miniconda3 (on Linux) and the pipeline is presented:
+Below an example of how to install Miniconda3 (on Linux) and the pipeline is presented:
 
 1. Installing miniconda (Linux)
 
