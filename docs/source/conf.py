@@ -22,7 +22,7 @@ copyright = '2020, Anders Andersson, Sjöqvist C'
 author = 'Anders Andersson, Sjöqvist C'
 
 # The full version, including alpha/beta/rc tags
-release = 'v0.7.0'
+release = 'latest'
 
 
 # -- General configuration ---------------------------------------------------
