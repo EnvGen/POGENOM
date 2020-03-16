@@ -14,9 +14,9 @@ List of required software/packages
 Some tips for installing software
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 The easiest and recommended way to install this pipeline is through conda in an isolated environment.
-Bellow an example of how to install conda and the pipeline in Linux is presented:
+Bellow an example of how to install Miniconda3 (on Linux) and the pipeline is presented:
 
-1. Installing conda (Linux)
+1. Installing miniconda (Linux)
 
 Download miniconda::
 
@@ -32,15 +32,15 @@ It may be necessary to source, with the command::
 
     source ~/.bashrc
 
-2. Download the pipiline and Install the pipeline software
+2. Download the pipeline and Install the pipeline software
 
-Clone the repositiory from github::
+Clone the repository from GitHub::
 
-    git clone <pipeline repository>
+    git clone https://github.com/EnvGen/POGENOM
 
 Now, go to the directory Input_POGENOM::
 
-    cd Input_POGENOM
+    cd POGENOM/Input_POGENOM
 
 This directory contains:
 
