@@ -69,70 +69,67 @@ If you are not in the working directory, go there using the command::
 
 In the "Input_POGENOM_config.json" file, set the parameters to be used. It contains the pipeline parameters. Below an example:
 
-{
+"workdir":"absolute/path/to/Input_POGENOM",
+  It must be an absolute path.
 
-"workdir":"absolute/path/to/working_directory",
-  #it must be an absolute path
-
-"dataset": "name of the dataset to be analyzed",
-  #it cannot be empty
+"dataset": "name of the dataset to be analysed",
+  It cannot be empty.
 
 "threads": 15,
-  #Number of threads
+  Number of threads.
 
 "fraction": "0.15",
-  #Fraction of reads to be subsampled when running the pipeline using dataset: "prefilt".
+  Fraction of reads to be subsampled when running the pipeline using dataset: "prefilt".
   Values lower then 15% will difficult the selection of samples with coverage close to the min_coverage 10.
-  Values higher then 25% will considerable increase the size of the directory <temp_sub_Reads_dir>/Reads/ and the running time.
+  Values higher then 25% will considerable increase the size of the directory <temp_sub_Reads_dir>/Reads/ and the runtime.
 
 "temp_sub_Reads_dir": "PREFILT",
-  #Directory storing Reads subsampled, when running the pipeline using dataset: "prefilt". The size of this directory may be hundreds of GBs.
+  Directory storing Reads subsampled, when running the pipeline using dataset: "prefilt". The size of this directory may be hundreds of GBs.
 
 "mags_ext": ".fa",
-  #extention used on your MAGs
+  Extention used on your MAGs.
 
 "reads_ext": ".fq.gz",
-  #extention used on your Reads, after R1. For instance, ".fq.gz" if reads are named "sample_R1.fq.gz, sample_R2.fq.gz"
+  Extention used on your Reads, after R1. For instance, ".fq.gz" if reads are named "sample_R1.fq.gz, sample_R2.fq.gz".
 
 "fwd_index": "_R1",
-  #index used to define forward reads in your sample dataset
-  
+  Index used to define forward reads in your sample dataset.
+
 "rev_index": "_R2",
-  #index used to define reverse reads in your dataset
+  Index used to define reverse reads in your dataset.
 
 "bowtie2_params": "--ignore-quals --mp 1,1 --np 1 --rdg 0,1 --rfg 0,1 --score-min L,0,-0.05",
-  #Mapping parameters. The –score-min then gives the minimum score that is allowed to report an alignment.
+  Mapping parameters. The –score-min then gives the minimum score that is allowed to report an alignment.
   Here, It represents a 95% identity threshold.
   For more information visit http://bowtie-bio.sourceforge.net/bowtie2/manual.shtml
 
 "mapqual": 20,
-  #Reads mapping quality threshold in BAM files. integer number. Parameter used in samtools view -q {}.
+  Reads mapping quality threshold in BAM files. Integer number. Parameter used in samtools view -q {}.
 
 "samtools_view_alignment_extra_filters": "-f 2 -F 1024",
-  #filters used after mapping reads.
+  Filters used for selecting mapped reads to be included in the BAM file.
   Here it selects only paired reads (-f 2) and avoids optical duplicates (-F 1024).                                                                                                                                  If no filters are required, then set an empty string ("samtools_view_alignment_extra_filters": "",)
 
 "min_coverage": 10,
-  #minimum genome coverage per sample per MAG (higher than, not included), integer number.
+  Minimum genome coverage per sample per MAG (higher than, not included), integer number.
   When dataset: "prefilt", a min_coverage value lower than 10 will select all samples, and the prefilter will be obsolete.
 
 "min_breadth": 40,
-  #minimum genome breadth per sample per MAG, integer number.
+  Minimum genome breadth per sample per MAG, integer number.
 
 "min_bsq_for_cov_median_calculation": 15,
-  #minimum base quality when counting the number of bases per genome position during coverage calculation. Integer number.
+  Minimum base quality when counting the number of bases per genome position during coverage calculation. Integer number.
 
 "freebayes_parameters": "-C 4 -p 1 --pooled-continuous --read-max-mismatch-fraction 0.05 --min-alternate-fraction 0.01 -q 15",
-  #parameters used during variant calling.
+  Parameters used during variant calling.
   By default, freebayes exclude duplicates marked as such in alignments.
   If you want to include use tag --use-duplicate-reads and remove "-F 1024" in "samtools_view_alignment_extra_filters".
-  # -q --min-base-quality Q. Exclude alleles from analysis if their supporting base quality is less than Q
+  The flag '-q --min-base-quality Q', exclude alleles from analysis if their supporting base quality is less than Q.
 
 "vcffilter_qual": "'QUAL > 20'"
-  #filtering variant calling.
-  Here it removes any sites with an estimated probability of not being polymorphic less than Phred 20 (corresponding to 99% probability of being a real SNP)
+  Filtering variant calling.
+  Here it removes any sites with an estimated probability of not being polymorphic less than Phred 20 (corresponding to 99% probability of being a real SNP).
 
-}
 
 To access and modify this file, you can use the following command::
 
@@ -144,13 +141,9 @@ Modify the required items and save the file. Use Ctrl +x and answer y, to save t
 
 The workflow is run with the following command::
 
-    bash Input_POGENOM.sh -d=<absolute path to configFile. Default, d=/from/root/to/config_files/Input_POGENOM_config.json>
-
-If you use the default parameters, the pipeline can be run with the command::
-
     bash Input_POGENOM.sh
 
-If you need to set a different path to the config file, please do not use relative paths (~/ nor ./)
+If you need to set a different path to the config file ( flag -d=<absolute path to configFile> ), please do not use relative paths (~/ nor ./)
 
 2.1) A dataset
 
@@ -161,7 +154,7 @@ If you want to run the pipeline on one dataset, please set the corresponding nam
 2.2.1) "prefilt"
 
 If you want to run the pipeline on the entire sampling dataset, and only on those MAGs and their corresponding samples with Median coverage higher than a certain threshold (i.e., min_coverage),
-please set "prefilt" in the config_file, "dataset": "prefilt" and "fraction": "<your float value, default=0.10>."
+please set "prefilt" in the config_file, "dataset": "prefilt" and "fraction": "<your float value, default=0.15>."
 
 When running the pipeline with dataset "prefilt", the created RAW_DATA/Reads/prefilt and RAW_DATA/Mags/prefilt folders contains symbolic links files.
 
