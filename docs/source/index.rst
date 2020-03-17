@@ -1,8 +1,8 @@
 .. POGENOM
 
-POGENOM
-=======
-Population genomics from metagenomes
+POGENOM's documentation
+=======================
+POGENOM is a computer program that calculates several population genomic parameters for a genome in relation to a set of metagnome samples.
 
 Description
 ===========
@@ -21,7 +21,8 @@ Contents
 
 .. toctree::
    :maxdepth: 4
-
+   
+   self
    Usage_POGENOM
    Input_POGENOM
    LICENSE
