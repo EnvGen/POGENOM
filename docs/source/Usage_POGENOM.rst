@@ -1,6 +1,6 @@
 Usage
 =====
- 
+
 Minimum input::
 
     perl pogenom.pl --vcf_file VCF_FILE --out OUTPUT_FILES_PREFIX --genome_size GENOME_SIZE
@@ -15,12 +15,11 @@ or::
 
 POGENOM will calculate genome-wide 𝜋 and FST, if ``VCF_FILE`` is a multi-sample VCF.
 
-
 If a GFF file is provided, gene-wise 𝜋 and gene-wise FST will also be calculated::
 
     perl pogenom.pl --vcf_file VCF_FILE --out OUTPUT_FILES_PREFIX --gff_file GFF_FILE
     
-And if a genetic code file is provided, amino acid frequencies will be calculated for each codon position in each gene in each sample, and gene-wise 𝜋 and FST will be calculated also at the amino acid level. Now also non-synonymous to synonymous polymorphism rates (pN/pS) will be calculated for each gene in each sample::
+And if a genetic code file is provided (such as ``standard_genetic_code.txt`` in the POGENOM distribution), amino acid frequencies will be calculated for each codon position in each gene and sample, and gene-wise 𝜋 and FST will be calculated also at the amino acid level. Now also non-synonymous to synonymous polymorphism rates (pN/pS) will be calculated for each gene in each sample::
 
     perl pogenom.pl --vcf_file VCF_FILE --out OUTPUT_FILES_PREFIX --gff_file GFF_FILE --genetic_code_file GENETIC_CODE_FILE
     
@@ -28,9 +27,7 @@ And if a genetic code file is provided, amino acid frequencies will be calculate
 Required arguments
 ^^^^^^^^^^^^^^^^^^
 
-
---vcf_file VCF_FILE                   
- Specify VCF file with data from a single or multiple samples.
+--vcf_file VCF_FILE                   Specify VCF file with data from a single or multiple samples.
 
 --out OUTPUT_FILES_PREFIX             
  Specify the prefix of the output file name(s) (overwrites existing files with same names).
@@ -41,7 +38,6 @@ Required arguments
 
 Optional arguments
 ^^^^^^^^^^^^^^^^^^
-
 
 --gff_file GFF_FILE                   
  Specify gff file. Either this, `--genome_size` or `--fasta_file` must be given.
