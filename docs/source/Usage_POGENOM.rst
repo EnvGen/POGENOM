@@ -15,10 +15,10 @@ Or::
 
     perl pogenom.pl --vcf_file VCF_FILE --out OUTPUT_FILES_PREFIX --fasta_file FASTA_FILE
 
-POGENOM will calculate genome-wide 𝜋 and FST, if `VCF_FILE` is a multi-sample VCF.
+POGENOM will calculate genome-wide 𝜋 and FST, if ``VCF_FILE`` is a multi-sample VCF.
 
 
-To also get gene-wise 𝜋 and gene-wise FST, an 
+To also get gene-wise 𝜋 and gene-wise FST, a GFF file needs to be provided 
 
 
 Required arguments
