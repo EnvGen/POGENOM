@@ -7,19 +7,25 @@ Minimum input::
 
     perl pogenom.pl --vcf_file VCF_FILE --out OUTPUT_FILES_PREFIX --genome_size GENOME_SIZE
 
-Or::
+or::
 
     perl pogenom.pl --vcf_file VCF_FILE --out OUTPUT_FILES_PREFIX --gff_file GFF_FILE
 
-Or::
+or::
 
     perl pogenom.pl --vcf_file VCF_FILE --out OUTPUT_FILES_PREFIX --fasta_file FASTA_FILE
 
 POGENOM will calculate genome-wide 𝜋 and FST, if ``VCF_FILE`` is a multi-sample VCF.
 
 
-To also get gene-wise 𝜋 and gene-wise FST, a GFF file needs to be provided 
+If a GFF file is provided, gene-wise 𝜋 and gene-wise FST will also be calculated::
 
+    perl pogenom.pl --vcf_file VCF_FILE --out OUTPUT_FILES_PREFIX --gff_file GFF_FILE
+    
+And if a genetic code file is provided, amino acid frequencies will be calculated for each codon position in each gene in each sample, and gene-wise 𝜋 and FST will be calculated also at the amino acid level. Now also non-synonymous to synonymous polymorphism rates (pN/pS) will be calculated for each gene in each sample.::
+
+    perl pogenom.pl --vcf_file VCF_FILE --out OUTPUT_FILES_PREFIX --gff_file GFF_FILE --genetic_code_file GENETIC_CODE_FILE
+    
 
 Required arguments
 ^^^^^^^^^^^^^^^^^^
