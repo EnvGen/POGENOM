@@ -5,15 +5,15 @@ Minimum input:
 
 Either::
 
-`perl pogenom.pl --vcf_file VCF_FILE --out OUTPUT_FILES_PREFIX --genome_size GENOME_SIZE [--help]`
+perl pogenom.pl --vcf_file VCF_FILE --out OUTPUT_FILES_PREFIX --genome_size GENOME_SIZE [--help]
 
 Or::
 
-`perl pogenom.pl -vcf_file VCF_FILE --out OUTPUT_FILES_PREFIX --gff_file GFF_FILE [--help]`
+`perl pogenom.pl --vcf_file VCF_FILE --out OUTPUT_FILES_PREFIX --gff_file GFF_FILE [--help]`
 
 Or::
 
-`perl pogenom.pl -vcf_file VCF_FILE --out OUTPUT_FILES_PREFIX --fasta_file FASTA_FILE [--help]`
+`perl pogenom.pl --vcf_file VCF_FILE --out OUTPUT_FILES_PREFIX --fasta_file FASTA_FILE [--help]`
 
 
 Required arguments
