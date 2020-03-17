@@ -1,7 +1,7 @@
 Usage
 =====
 
-Minimum input::
+Minimum input (only genome-wide 𝜋 and FST are calculated)::
 
     perl pogenom.pl --vcf_file VCF_FILE --out OUTPUT_FILES_PREFIX --genome_size GENOME_SIZE
 
@@ -12,8 +12,6 @@ or::
 or::
 
     perl pogenom.pl --vcf_file VCF_FILE --out OUTPUT_FILES_PREFIX --fasta_file FASTA_FILE
-
-POGENOM will calculate genome-wide 𝜋 and FST, if ``VCF_FILE`` is a multi-sample VCF.
 
 If a GFF file is provided, gene-wise 𝜋 and gene-wise FST will also be calculated::
 
