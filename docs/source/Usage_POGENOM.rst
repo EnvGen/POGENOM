@@ -25,24 +25,21 @@ And if a genetic code file is provided (such as ``standard_genetic_code.txt`` in
 Required arguments
 ------------------
 
-`--vcf_file VCF_FILE` Specify VCF file with data from a single or multiple samples.
+``--vcf_file VCF_FILE`` Specify VCF file with data from a single or multiple samples.
 
 ``--out OUTPUT_FILES_PREFIX`` Specify the prefix of the output file name(s) (overwrites existing files with same names).
 
-```--genome_size GENOME_SIZE``` Specify genome size (in bp; integer). Not required if `--gff_file` or `--fasta_file` with genome sequence is given.
+``--genome_size GENOME_SIZE`` Specify genome size (in bp; integer). Not required if `--gff_file` or `--fasta_file` with genome sequence is given.
 
 
 Optional arguments
-^^^^^^^^^^^^^^^^^^
+------------------
 
---gff_file GFF_FILE                   
- Specify gff file. Either this, `--genome_size` or `--fasta_file` must be given.
+``--gff_file GFF_FILE`` Specify gff file. Either this, ``--genome_size`` or ``--fasta_file`` must be given.
 
---fasta_file FASTA_FILE
- Specify fasta file. Either this, `--genome_size` or `--gff_file` must be given
+``--fasta_file FASTA_FILE`` Specify fasta file. Either this, ``--genome_size`` or ``--gff_file`` must be given
 
---genetic_code_file GENETIC_CODE_FILE
- Specify genetic code file. E.g. `standard_genetic_code.txt` in the POGENOM distribution.
+``--genetic_code_file GENETIC_CODE_FILE`` Specify genetic code file. E.g. ``standard_genetic_code.txt`` in the POGENOM distribution.
 
 --loci_file LOCI_FILE
  Specify file with ids of loci to include.
