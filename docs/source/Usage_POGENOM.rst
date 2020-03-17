@@ -23,16 +23,13 @@ And if a genetic code file is provided (such as ``standard_genetic_code.txt`` in
     
 
 Required arguments
-^^^^^^^^^^^^^^^^^^
+------------------
 
---vcf_file VCF_FILE                   
-Specify VCF file with data from a single or multiple samples.
+`--vcf_file VCF_FILE` Specify VCF file with data from a single or multiple samples.
 
---out OUTPUT_FILES_PREFIX             
-Specify the prefix of the output file name(s) (overwrites existing files with same names).
+``--out OUTPUT_FILES_PREFIX`` Specify the prefix of the output file name(s) (overwrites existing files with same names).
 
---genome_size GENOME_SIZE             
-Specify genome size (in bp; integer). Not required if `--gff_file` or `--fasta_file` with genome sequence is given.
+```--genome_size GENOME_SIZE``` Specify genome size (in bp; integer). Not required if `--gff_file` or `--fasta_file` with genome sequence is given.
 
 
 Optional arguments
