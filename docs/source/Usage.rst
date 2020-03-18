@@ -36,9 +36,9 @@ reverse reads::
 
 2. GENOMES
 
-Go to the directory cd Input_POGENOM/RAW_DATA/MAGs/::
+Go to the directory cd Input_POGENOM/RAW_DATA/Genomes/::
 
-    cd Input_POGENOM/RAW_DATA/MAGs/
+    cd Input_POGENOM/RAW_DATA/Genomes/
 
 Create a directory for each dataset::
 
@@ -48,7 +48,7 @@ There must be a least one dataset.
 
 Copy or link (recommended) genomes in FASTA format to this file::
 
-    cp path/to/MAGs/* <dataset_name>/. or ln -s path/to/MAGs/* <dataset_name>/.
+    cp path/to/Genomes/* <dataset_name>/. or ln -s path/to/Genomes/* <dataset_name>/.
 
 Make sure that genome names follow the syntax::
 
@@ -74,19 +74,23 @@ In the "Input_POGENOM_config.json" file, set the parameters to be used. It conta
 
 "dataset": "name of the dataset to be analysed",
   It cannot be empty.
-
-"threads": 15,
-  Number of threads.
-
+  
+"mode": "prefilt", 
+  When "mode": "prefilt", the pipeline will do a quick prescreening by mapping a subset of the reads from each sample, to estimate the     coverage of the samples and determine which should be included. 
+  If no prescreening (prefilt) is required, then set an empty string ("mode": "",). 
+  
 "fraction": "0.15",
-  Fraction of reads to be subsampled when running the pipeline using dataset: "prefilt".
+  Fraction of reads to be subsampled when running the pipeline using "mode": "prefilt".
   Lowering the fraction increases the uncertaintly in the coverage estimates.
   Increasing the fraction increases the size of the directory <temp_sub_Reads_dir>/Reads/ and the runtime.
 
 "temp_sub_Reads_dir": "PREFILT",
-  Directory storing the subsampled reads when running the pipeline using dataset: "prefilt". The size of this directory will be "fraction" * the size of "dataset".
+  Directory storing the subsampled reads when running the pipeline using "mode": "prefilt". The size of this directory will be    "fraction" * the size of "dataset".
 
-"mags_ext": ".fa",
+"threads": 15,
+  Number of threads.
+
+"genomes_ext": ".fa",
   Extention used on your genome files.
 
 "reads_ext": ".fq.gz",
@@ -113,7 +117,7 @@ In the "Input_POGENOM_config.json" file, set the parameters to be used. It conta
 
 "min_coverage": 10,
   Minimum genome coverage per sample per genome (higher than, not included), integer.
-  When dataset: "prefilt", a min_coverage value lower than 10 will select all samples, and the prefilter will be obsolete.
+  When "mode": "prefilt", a min_coverage value lower than 10 will select all samples, and the prefilter will be obsolete.
 
 "min_breadth": 40,
   Minimum genome breadth per sample per genome. Integer.
@@ -146,19 +150,6 @@ The workflow is run with the following command::
 
 If you need to set a different path to the config file ( flag -d=<absolute path to configFile> ), please do not use relative paths (~/ nor ./)
 
-2.1) A dataset
-
-If you want to run the pipeline on one dataset, please set the corresponding name in the config_file, "dataset": <dataset_name>
-
-2.2) Several datasets
-
-2.2.1) "prefilt"
-
-If you want to run the pipeline on the entire sampling dataset, and only on those genomes and their corresponding samples with median coverage higher than a certain threshold (i.e., min_coverage), please set "prefilt" in the config_file, "dataset": "prefilt" and "fraction": "<your float value, default=0.15>."
-
-When running the pipeline with dataset "prefilt", the created RAW_DATA/Reads/prefilt and RAW_DATA/Mags/prefilt folders contains symbolic links files.
-
 If you are using conda, before exiting the workflow, the environment needs to be deactivated using the following command::
 
     conda deactivate
-
