@@ -28,7 +28,7 @@ Example of filename::
 
 The corresponding log file for these steps is(are)::
 
-    log_files/<dataset>_genomes_coverage_breadth.log or log_files/coverage_breadth_<genome_name>.log (when dataset: "prefilt")
+    log_files/<dataset>_genomes_coverage_breadth.log or log_files/<dataset>_prefilt_<genome_name>_coverage_breadth.log (when "mode": "prefilt")
 
 E) 05_BAM_merged.
 When the number of BAM files in 04_mergeable/ directory is more than 1, the files are merged into one BAM file per genome. The read group (@RG) information from each BAM file, corresponding to the sample name, is kept.
@@ -36,11 +36,12 @@ Example of filename::
 
     05_BAM_merged/<dataset>/<genome_name>_merged_sorted_position.bam
 
-
-Intermediate files when dataset: "prefilt"
+Intermediate files when "mode": "prefilt"
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The directory PREFILT/ is created and contains:
+When "mode": "prefilt", the suffix "_prefilt" will be added to <dataset> in intermediate files B-E, e.g., 05_BAM_merged/<dataset>_prefilt/<genome_name>_merged_sorted_position.bam
+
+Additionally, the directory PREFILT/ is created and contains:
 
 02_MAPPING, 03_MPILEUP
 
@@ -62,14 +63,17 @@ Example of filename::
 
     06_VCF/<dataset>/<genome_name>_mpq_<mapping_quality>.vcf
 
-The list of samples used for the generation of the vcf files can be found in the files <genome_name>_samples.txt
+The list of samples used for the generation of the vcf files can be found in the files 06_VCF/<dataset>/<genome_name>_samples.txt
 
 When no BAM file passes the filter (coverage and breadth), a vcf file cannot be created. In this case, the corresponding <genome_name>_samples.txt file will contain the following statement:
-"The mag <MAG_name>.fa has not BAM file that passes the filter breadth and coverage. A .vcf file cannot be created."
+"The mag <genome_name>.fa has not BAM file that passes the filter breadth and coverage. A vcf file cannot be created."
+
+When "mode": "prefilt", the suffix "_prefilt" will be added to <dataset> in VCF files, e.g., 
+06_VCF/<dataset>_prefilt/<genome_name>_mpq_<mapping_quality>.vcf
 
 The corresponding log file for these steps is (are)::
 
-    log_files/<dataset>_genomes_vcf_files.log or log_files/vcf_<genome_name>.log (when dataset: "prefilt")
+    log_files/<dataset>_genomes_vcf_files.log or log_files/<dataset>_prefilt_<genome_name>_vcf_files.log (when "mode": "prefilt")
 
 Genome size files
 ^^^^^^^^^^^^^^
