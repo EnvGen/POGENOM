@@ -11,7 +11,7 @@ List of required software/packages
 - picard
 - numpy
 
-Some tips for installing software
+Installing the pipeline
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 The easiest and recommended way to install this pipeline is through conda in an isolated environment.
 Below an example of how to install Miniconda3 (on Linux) and how to set up the pipeline (including its required software) in an environment:
