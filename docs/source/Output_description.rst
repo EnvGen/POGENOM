@@ -71,7 +71,7 @@ The corresponding log file for these steps is (are)::
 
     log_files/<dataset>_genomes_vcf_files.log or log_files/vcf_<genome_name>.log (when dataset: "prefilt")
 
-Genome_size files
+Genome size files
 ^^^^^^^^^^^^^^
 The size of the genome (number of bases) is stored in file <genome_name>.size. This value may be used later as input for POGENOM.
 
