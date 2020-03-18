@@ -33,4 +33,6 @@ POGENOM doesn't have a paper yet, meanwhile please cite it like this:
 
 Andersson AF, Sjöqvist C (2017). POGENOM: population genomics from metagenomes. https://github.com/EnvGen/POGENOM.
 
+If you use the Input_POGENOM pipeline, make sure to cite the included software/packages that are listed in its documentation.
+
 
