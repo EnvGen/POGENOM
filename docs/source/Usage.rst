@@ -1,7 +1,7 @@
 Usage
 =====
 
-Organising your data
+Organise your data
 ^^^^^^^^^^^^^^^^
 
 The pipeline is capable of analyzing several datasets with samples (paired fastq read files) and several genomes (fasta files). The minimum data required is one dataset with one pair of read files (forward and reverse) and one genome.
