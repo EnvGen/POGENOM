@@ -14,7 +14,7 @@ List of required software/packages
 Some tips for installing software
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 The easiest and recommended way to install this pipeline is through conda in an isolated environment.
-Below an example of how to install Miniconda3 (on Linux) and the pipeline is presented:
+Below an example of how to install Miniconda3 (on Linux) and how to set up the pipeline (including its required software) in an environment:
 
 1. Installing miniconda (Linux)
 
@@ -51,4 +51,6 @@ This directory contains:
 Create the virtual environment using the command::
 
     conda env create -f config_files/Input_POGENOM_conda_env_setup.yaml
+
+
 
