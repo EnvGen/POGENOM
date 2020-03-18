@@ -17,7 +17,7 @@ If a GFF file is provided, gene-wise 𝜋 and gene-wise FST will also be calcula
 
     perl pogenom.pl --vcf_file VCF_FILE --out OUTPUT_FILES_PREFIX --gff_file GFF_FILE
     
-And if a genetic code file is provided (such as ``standard_genetic_code.txt`` in the POGENOM distribution), amino acid frequencies will be calculated for each codon position in each gene and sample, and gene-wise 𝜋 and FST will be calculated also at the amino acid level. Now also non-synonymous to synonymous polymorphism rates (pN/pS) will be calculated for each gene in each sample::
+And if a genetic code file is provided (such as `standard_genetic_code.txt` in the POGENOM distribution), amino acid frequencies will be calculated for each codon position in each gene and sample, and gene-wise 𝜋 and FST will be calculated also at the amino acid level. Now also non-synonymous to synonymous polymorphism rates (pN/pS) will be calculated for each gene in each sample::
 
     perl pogenom.pl --vcf_file VCF_FILE --out OUTPUT_FILES_PREFIX --gff_file GFF_FILE --genetic_code_file GENETIC_CODE_FILE
     
@@ -39,7 +39,7 @@ Optional arguments
 
 ``--fasta_file FASTA_FILE`` Specify fasta file. Either this, ``--genome_size`` or ``--gff_file`` must be given.
 
-``--genetic_code_file GENETIC_CODE_FILE`` Specify genetic code file. E.g. ``standard_genetic_code.txt`` in the POGENOM distribution.
+``--genetic_code_file GENETIC_CODE_FILE`` Specify genetic code file. E.g. `standard_genetic_code.txt` in the POGENOM distribution.
 
 ``--loci_file LOCI_FILE`` Specify file with ids of loci to include.
 
