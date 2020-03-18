@@ -3,13 +3,13 @@ Installation
 
 List of required software/packages
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-- snakemake
-- bowtie2
-- samtools
-- vcflib
-- freebayes
-- picard
-- numpy
+- `snakemake <https://snakemake.readthedocs.io/en/stable/>`_
+- `bowtie2 <http://bowtie-bio.sourceforge.net/bowtie2/>`_
+- `samtools <http://www.htslib.org/>`_
+- `vcflib <https://github.com/vcflib/vcflib>`_
+- `freebayes <https://github.com/ekg/freebayes>`_
+- `picard <https://broadinstitute.github.io/picard/>`_
+- `numpy <https://numpy.org/>`_
 
 Installing the pipeline
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
