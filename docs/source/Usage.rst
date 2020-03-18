@@ -84,7 +84,7 @@ In the "Input_POGENOM_config.json" file, set the parameters to be used. It conta
   Increasing the fraction increases the size of the directory <temp_sub_Reads_dir>/Reads/ and the runtime.
 
 "temp_sub_Reads_dir": "PREFILT",
-  Directory storing the subsampled reads when running the pipeline using dataset: "prefilt". The size of this directory will "fraction" * the size of "dataset".
+  Directory storing the subsampled reads when running the pipeline using dataset: "prefilt". The size of this directory will be "fraction" * the size of "dataset".
 
 "mags_ext": ".fa",
   Extention used on your genome files.
