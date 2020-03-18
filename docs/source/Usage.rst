@@ -1,12 +1,12 @@
 Usage
 =====
 
-Import your data
+Organising your data
 ^^^^^^^^^^^^^^^^
 
-The pipeline is capable of analyzing several datasets, mags, and samples. The minimum data required is one dataset, one sample Reads (forward and reverse), and one MAG.
+The pipeline is capable of analyzing several datasets with samples (paired fastq read files) and several genomes (fasta files). The minimum data required is one dataset with one pair of read files (forward and reverse) and one genome.
 
-Input data (Reads and MAGs) must be stored in the directory RAW_DATA/, as explained below:
+Input data (reads and genomes) must be stored in the directory RAW_DATA/, as explained below:
 
 1. READS
 
@@ -24,7 +24,7 @@ Copy or link (recommended) reads to this directory::
 
     cp path/to/reads/* <dataset_name>/. or ln -s path/to/reads/* .
 
-Make sure that reads name follows the syntax:
+Make sure that read file names follow the syntax:
 
 forward reads::
 
@@ -34,7 +34,7 @@ reverse reads::
 
     <sample_name><rev_index><reads_ext> e.g., P6071_505_R1.fq.gz, where sample_name = P6071_505, rev_index = _R2 , and reads_ext = .fq.gz
 
-2. MAGS
+2. Genomes
 
 Go to the directory cd Input_POGENOM/RAW_DATA/MAGs/::
 
@@ -46,13 +46,13 @@ Create a directory for each dataset::
 
 There must be a least one dataset.
 
-Copy or link (recommended) MAGs to this file::
+Copy or link (recommended) genomes in FASTA format to this file::
 
     cp path/to/MAGs/* <dataset_name>/. or ln -s path/to/MAGs/* <dataset_name>/.
 
-Make sure that MAG name follows the syntax::
+Make sure that genome names follow the syntax::
 
-    <MAG_name><mags_ext>, e.g., P6071_521_bin125.fa, where MAG_name = P6071_521_bin125, and mags_ext = .fa
+    <genome_name><genome_ext>, e.g., P6071_521_bin125.fa, where genome_name = P6071_521_bin125, and genome_ext = .fa
 
 
 Run the pipeline
