@@ -34,7 +34,7 @@ reverse reads::
 
     <sample_name><rev_index><reads_ext> e.g., P6071_505_R1.fq.gz, where sample_name = P6071_505, rev_index = _R2 , and reads_ext = .fq.gz
 
-2. Genomes
+2. GENOMES
 
 Go to the directory cd Input_POGENOM/RAW_DATA/MAGs/::
 
@@ -80,42 +80,43 @@ In the "Input_POGENOM_config.json" file, set the parameters to be used. It conta
 
 "fraction": "0.15",
   Fraction of reads to be subsampled when running the pipeline using dataset: "prefilt".
-  Values lower then 15% will difficult the selection of samples with coverage close to the min_coverage 10.
-  Values higher then 25% will considerable increase the size of the directory <temp_sub_Reads_dir>/Reads/ and the runtime.
+  Lowering the fraction increases the uncertaintly in the coverage estimates.
+  Increasing the fraction increases the size of the directory <temp_sub_Reads_dir>/Reads/ and the runtime.
 
 "temp_sub_Reads_dir": "PREFILT",
-  Directory storing Reads subsampled, when running the pipeline using dataset: "prefilt". The size of this directory may be hundreds of GBs.
+  Directory storing the subsampled reads when running the pipeline using dataset: "prefilt". The size of this directory will "fraction" * the size of "dataset".
 
 "mags_ext": ".fa",
-  Extention used on your MAGs.
+  Extention used on your genome files.
 
 "reads_ext": ".fq.gz",
-  Extention used on your Reads, after R1. For instance, ".fq.gz" if reads are named "sample_R1.fq.gz, sample_R2.fq.gz".
+  Extention used on your read files. For instance, ".fq.gz" if files are named "sample_R1.fq.gz & sample_R2.fq.gz".
 
 "fwd_index": "_R1",
-  Index used to define forward reads in your sample dataset.
+  Index used to define forward reads.
 
 "rev_index": "_R2",
-  Index used to define reverse reads in your dataset.
+  Index used to define reverse reads.
 
 "bowtie2_params": "--ignore-quals --mp 1,1 --np 1 --rdg 0,1 --rfg 0,1 --score-min L,0,-0.05",
-  Mapping parameters. The –score-min then gives the minimum score that is allowed to report an alignment.
+  Bowtie2 mapping parameters. The –score-min then gives the minimum score that is allowed to report an alignment.
   Here, It represents a 95% identity threshold.
   For more information visit http://bowtie-bio.sourceforge.net/bowtie2/manual.shtml
 
 "mapqual": 20,
-  Reads mapping quality threshold in BAM files. Integer number. Parameter used in samtools view -q {}.
+  Read mapping quality threshold in BAM files. Integer. Parameter used in samtools view -q {}.
 
 "samtools_view_alignment_extra_filters": "-f 2 -F 1024",
   Filters used for selecting mapped reads to be included in the BAM file.
-  Here it selects only paired reads (-f 2) and avoids optical duplicates (-F 1024).                                                                                                                                  If no filters are required, then set an empty string ("samtools_view_alignment_extra_filters": "",)
+  Here it selects only paired reads (-f 2) and avoids optical duplicates (-F 1024).
+  If no filters are required, then set an empty string ("samtools_view_alignment_extra_filters": "",)
 
 "min_coverage": 10,
-  Minimum genome coverage per sample per MAG (higher than, not included), integer number.
+  Minimum genome coverage per sample per genome (higher than, not included), integer.
   When dataset: "prefilt", a min_coverage value lower than 10 will select all samples, and the prefilter will be obsolete.
 
 "min_breadth": 40,
-  Minimum genome breadth per sample per MAG, integer number.
+  Minimum genome breadth per sample per genome. Integer.
 
 "min_bsq_for_cov_median_calculation": 15,
   Minimum base quality when counting the number of bases per genome position during coverage calculation. Integer number.
@@ -153,8 +154,7 @@ If you want to run the pipeline on one dataset, please set the corresponding nam
 
 2.2.1) "prefilt"
 
-If you want to run the pipeline on the entire sampling dataset, and only on those MAGs and their corresponding samples with Median coverage higher than a certain threshold (i.e., min_coverage),
-please set "prefilt" in the config_file, "dataset": "prefilt" and "fraction": "<your float value, default=0.15>."
+If you want to run the pipeline on the entire sampling dataset, and only on those genomes and their corresponding samples with median coverage higher than a certain threshold (i.e., min_coverage), please set "prefilt" in the config_file, "dataset": "prefilt" and "fraction": "<your float value, default=0.15>."
 
 When running the pipeline with dataset "prefilt", the created RAW_DATA/Reads/prefilt and RAW_DATA/Mags/prefilt folders contains symbolic links files.
 
