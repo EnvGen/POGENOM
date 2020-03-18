@@ -10,6 +10,7 @@ List of required software/packages
 - `freebayes <https://github.com/ekg/freebayes>`_
 - `picard <https://broadinstitute.github.io/picard/>`_
 - `numpy <https://numpy.org/>`_
+- `python <https://www.python.org/>`_
 
 Installing the pipeline
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
