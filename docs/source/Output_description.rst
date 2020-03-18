@@ -28,7 +28,7 @@ Example of filename::
 
 The corresponding log file for these steps is(are)::
 
-    log_files/<dataset>_genomes_coverage_breadth.log or log_files/<dataset>_prefilt_<genome_name>_coverage_breadth.log (when "mode": "prefilt")
+    log_files/<dataset>_genomes_coverage_breadth.log or log_files/<dataset>.<genome_name>.coverage_breadth.log (when "mode": "prefilt")
 
 E) 05_BAM_merged.
 When the number of BAM files in 04_mergeable/ directory is more than 1, the files are merged into one BAM file per genome. The read group (@RG) information from each BAM file, corresponding to the sample name, is kept.
@@ -73,7 +73,7 @@ When "mode": "prefilt", the suffix "_prefilt" will be added to <dataset> in VCF 
 
 The corresponding log file for these steps is (are)::
 
-    log_files/<dataset>_genomes_vcf_files.log or log_files/<dataset>_prefilt_<genome_name>_vcf_files.log (when "mode": "prefilt")
+    log_files/<dataset>_genomes_vcf_files.log or log_files/<dataset>.<genome_name>_vcf_files.log (when "mode": "prefilt")
 
 Genome size files
 ^^^^^^^^^^^^^^
