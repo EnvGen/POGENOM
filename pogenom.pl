@@ -6,50 +6,54 @@ pogenom.pl - Calculates population genomic parameters from a VCF file
 
 =head1 USAGE (minimum input)
 
- Either:
- 
-perl pogenom.pl --vcf_file VCF_FILE --out OUTPUT_FILES_PREFIX --genome_size GENOME_SIZE [--help]
+  perl pogenom.pl --vcf_file VCF_FILE --out OUTPUT_FILES_PREFIX --genome_size GENOME_SIZE
 
- Or:
+or:
  
-perl pogenom.pl --vcf_file VCF_FILE --out OUTPUT_FILES_PREFIX --gff_file GFF_FILE [--help]
+  perl pogenom.pl --vcf_file VCF_FILE --out OUTPUT_FILES_PREFIX --gff_file GFF_FILE
  
- Or:
+or:
 
-perl pogenom.pl --vcf_file VCF_FILE --out OUTPUT_FILES_PREFIX --fasta_file FASTA_FILE [--help]
+  perl pogenom.pl --vcf_file VCF_FILE --out OUTPUT_FILES_PREFIX --fasta_file FASTA_FILE
 
 
 =head1 REQUIRED ARGUMENTS
 
---vcf_file VCF_FILE         Specify vcf file with data from a single or multiple samples
+  --vcf_file VCF_FILE         Specify vcf file with data from a single or multiple samples
 
---out OUTPUT_FILES_PREFIX   Specify the prefix of the output file name(s) (overwrites existing files with same names)
+  --out OUTPUT_FILES_PREFIX   Specify the prefix of the output file name(s) (overwrites existing files with same names)
 
---genome_size GENOME_SIZE   Specify genome size (in bp; integer). Not required if --gff_file or --fasta_file with genome sequence is given
+  --genome_size GENOME_SIZE   Specify genome size (in bp; integer). Not required if --gff_file or --fasta_file with genome sequence is given
  
 
 
 =head1 OPIONAL ARGUMENTS
 
---gff_file GFF_FILE         Specify gff file. Either this, --genome_size or --fasta_file must be given
+  --gff_file GFF_FILE         Specify gff file. Either this, --genome_size or --fasta_file must be given
  
---fasta_file FASTA_FILE     Specify fasta file. Either this, --genome_size or --gff_file must be given
+  --fasta_file FASTA_FILE     Specify fasta file. Either this, --genome_size or --gff_file must be given
  
---genetic_code_file GENETIC_CODE_FILE   Specify genetic code file. E.g. standard_genetic_code.txt in the POGENOM distribution
+  --genetic_code_file GENETIC_CODE_FILE   Specify genetic code file. E.g. standard_genetic_code.txt in the POGENOM distribution
  
---loci_file LOCI_FILE       Specify file with ids of loci to be included
- 
---min_count MIN_COUNT       Specify minimum coverage for a locus to be included for the sample
- 
---min_found MIN_FOUND_IN    Specify minimum number of samples that a locus needs to be present in to be included
- 
---subsample SUBSAMPLE       Specify coverage level at which to subsample
- 
---keep_haplotypes           If this is used, POGENOM will not split haplotypes into single-nucleotide variants, which is otherwise the default
- 
---vcf_format                Specify VCF file format version. Can be set to freebayes (default) or GATK
+  --loci_file LOCI_FILE       Specify file with ids of loci to be included
 
---help                      Prints this help message
+  --sample_file SAMPLE_FILE   Specify file with ids of samples to be included
+ 
+  --min_count MIN_COUNT       Specify minimum coverage for a locus to be included for the sample
+ 
+  --min_found MIN_FOUND_IN    Specify minimum number of samples that a locus needs to be present in to be included
+ 
+  --subsample SUBSAMPLE       Specify coverage level at which to subsample
+ 
+  --keep_haplotypes           If this is used, POGENOM will not split haplotypes into single-nucleotide variants, which is otherwise the default
+ 
+  --vcf_format VCF_FORMAT     Specify VCF file format version. Can be set to freebayes (default) or GATK
+
+  --fst_perm FST_PERM         Specify number of permutations (integer) for making randomised gene-wise Fst. Use with caution, output can be huge.
+
+  --pi_only                   If this is used, POGENOM will only calculate and output genome-wide pi
+ 
+  --help                      Prints this help message
 
 [Press q to close this help message]
 
@@ -65,15 +69,20 @@ $vcf_file = undef;
 $gff_file = undef;
 $fasta_file = undef;
 $genetic_code_file = undef;
+$loci_file = undef;
+$sample_file = undef;
 $outprefix = undef;
 $reference = undef;
 $keep_haplotypes = undef;
+$pi_only = undef;
 $use_pseudocounts = undef;
 $subsample = undef;
 $vcf_format = "freebayes";
 $na_if_missing_loci = 1;
+$n_fst_permutations = undef;
 
-&GetOptions('vcf_file=s' => \$vcf_file, 'vcf_format=s' => \$vcf_format, 'gff_file=s' => \$gff_file, 'fasta_file=s' => \$fasta_file, 'genetic_code_file=s' => \$genetic_code_file, 'output=s' => \$outprefix, 'min_count=i' => \$min_count, 'min_found=i' => \$min_found_in, 'ref=s' => \$reference, 'genome_size=i' => \$genome_size, 'keep_haplotypes!' => \$keep_haplotypes, 'loci_file=s' => \$loci_file, 'subsample=s' => \$subsample, 'use_pseudocounts' => \$use_pseudocounts, 'h!' => \$help);
+
+&GetOptions('vcf_file=s' => \$vcf_file, 'vcf_format=s' => \$vcf_format, 'gff_file=s' => \$gff_file, 'fasta_file=s' => \$fasta_file, 'genetic_code_file=s' => \$genetic_code_file, 'output=s' => \$outprefix, 'min_count=i' => \$min_count, 'min_found=i' => \$min_found_in, 'ref=s' => \$reference, 'genome_size=i' => \$genome_size, 'keep_haplotypes!' => \$keep_haplotypes, 'loci_file=s' => \$loci_file, 'sample_file=s' => \$sample_file, 'subsample=s' => \$subsample, 'use_pseudocounts' => \$use_pseudocounts, 'fst_perm=i' => \$n_fst_permutations, 'pi_only!' => \$pi_only, 'h!' => \$help);
 
 if (!$outprefix) {
     system ('perldoc', $0);
@@ -95,7 +104,6 @@ if ($min_count < 2) {
     print"Error: min_count cannot be set to <2\n";
     exit;
 }
-
 if ($vcf_format ne "freebayes") {
     if ($vcf_format ne "GATK") {
         print"\nError: Unrecognized vcf_format. Should be either freebayes (default) or GATK\n\n";
@@ -105,23 +113,49 @@ if ($vcf_format ne "freebayes") {
 
 ####################
 
+$logtext = "vcf_file: $vcf_file\n";
+if ($gff_file) {
+    $logtext = $logtext."gff_file: $gff_file\n";
+}
+if ($fasta_file) {
+    $logtext = $logtext."fasta_file: $fasta_file\n";
+}
+if ($genetic_code_file) {
+    $logtext = $logtext."genetic_code_file: $genetic_code_file\n";
+}
 print"\n### Running pogenom ###\n";
 if ($genome_size) {
-    print"genome_size set to $genome_size\n";
+    $logtext = $logtext."genome_size set to: $genome_size\n";
 } elsif ($fasta_file) {
-    print"genome_size will be calculated from sequence file\n";
+    $logtext = $logtext."genome_size calculated from fasta file\n";
 } elsif ($gff_file) {
-    print"genome_size will be calculated from GFF file\n";
+    $logtext = $logtext."genome_size calculated from GFF file\n";
 }
-print"min_count set to $min_count\n";
-print"min_found set to $min_found_in\n";
+$logtext = $logtext."min_count set to: $min_count\n";
+if ($min_found_in == 0) {
+    $logtext = $logtext."min_found set to: number of samples\n";
+}
+if ($min_found_in > 0) {
+    $logtext = $logtext."min_found set to: $min_found_in\n";
+}
 if ($subsample) {
-    print"Subsampling will be done with $subsample reads per sample\n";
+    $logtext = $logtext."Subsampling set to: $subsample reads per locus\n";
+}
+if ($pi_only) {
+    $logtext = $logtext."Running in pi_only mode\n";
 }
 if ($loci_file) {
-    print"Analysis restricted to loci in file: $loci_file\n";
+    $logtext = $logtext."Analysis restricted to loci in file: $loci_file\n";
     &read_loci_to_include;
 }
+if ($sample_file) {
+    $logtext = $logtext."Analysis restricted to samples in file: $sample_file\n";
+    &read_samples_to_include;
+}
+if ($n_fst_permutations) {
+    $logtext = $logtext."Permuted gene-wise fst calculated with: $n_fst_permutations permutations\n";
+}
+print"$logtext\n";
 print"\n### Read variant data ###\n";
 if ($keep_haplotypes) {
     &get_snp_data_combined_vcf;
@@ -146,22 +180,29 @@ if ($genetic_code_file) {
 }
 print"\n### Calculating Nucleotide Diversity (pi) ###\n";
 &calc_pi;
-if ($gff_file) {
+&estimate_genome_coverage;
+if ($gff_file and !$pi_only) {
     print"\n### Calculating Gene-wise Nucleotide Diversity (pi) ###\n";
     &calc_per_gene_pi;
     if ($genetic_code_file) {
         print"\n### Calculating Gene-wise Aminoacid Diversity (aa-pi) ###\n";
         &calc_per_gene_aminoacid_pi;
+        print"\n### Calculating Aminoacid Frequencies ###\n";
+        &calc_aminoacid_frequencies;
         print"\n### Calculating Gene-wise pN/pS ###\n";
-        &calc_pN_pS;
+        &calc_pN_pS; # comment this out to speed up
     }
 }
-if (@samples > 1) {
+if ((@samples > 1) and !$pi_only) {
     print"\n### Calculating Fixation Index (FST) ###\n";
     &calc_fst;
     if ($gff_file) {
         print"\n### Calculating Gene-wise Fixation Index (FST) ###\n";
         &calc_per_gene_fst;
+        if ($n_fst_permutations) {
+            print"\n### Calculating Permuted Gene-wise Fixation Index (FST) ###\n";
+            &calc_per_gene_fst_permuted;
+        }
         if ($genetic_code_file) {
             print"\n### Calculating Gene-wise Aminoacid Fixation Index (aa-FST) ###\n";
             &calc_per_gene_aminoacid_fst;
@@ -177,15 +218,25 @@ print"\n### Finished pogenom succesfully ###\n\n";
 sub read_loci_to_include {
     open (INFILE, "$loci_file") || die ("Error: can't open $loci_file");
     while (<INFILE>) {
-        chomp;
+        $_ =~ s/\R//g;
         $row = $_;
         @fields = split(/\t/, $row);
         $locus = $fields[0]."|".$fields[1];
         $include_locus{$locus} = 1;
-        #print"$locus\n";
     }
     $temp = keys %include_locus;
-    print"Number of loci specified in file: $temp\n";
+    $logtext = $logtext."Number of loci specified in file: $temp\n";
+}
+
+sub read_samples_to_include {
+    open (INFILE, "$sample_file") || die ("Error: can't open $sample_file");
+    while (<INFILE>) {
+        $_ =~ s/\R//g;
+        $row = $_;
+        $include_sample{$row} = 1;
+    }
+    $temp = keys %include_sample;
+    $logtext = $logtext."Number of samples specified in file: $temp\n";
 }
 
 sub read_gff {
@@ -196,7 +247,6 @@ sub read_gff {
     while (<INFILE>) {
         chomp;
         $row = $_;
-        #print"$row\n";
         if ($fasta_started == 1) {
             if (substr($row, 0, 1) eq ">") {
                 if ($seq ne "") {
@@ -216,6 +266,7 @@ sub read_gff {
             next if (substr($row, 0, 1) eq "#");
             @fields = split(/\t/, $row);
             next if (@fields == 1);
+            next if ($fields[2] ne "CDS");
             $contig = $fields[0];
             $start = $fields[3];
             $end = $fields[4];
@@ -239,7 +290,6 @@ sub read_gff {
             push(@{ $contig_genes{$contig} }, $gene);
             for ($pos = $start; $pos < $end; $pos++) {
                 $locus = $contig."|".$pos;
-                #print"$locus#\n";
                 if (defined $locus_found{$locus}) {
                     if ($locus_found{$locus} >= $min_found_in) {
                         $gene_locus{$gene}{$locus} = 1;
@@ -317,11 +367,11 @@ sub read_fasta {
             $genome_size = $genome_size + length($contig_seq{$contig});
         }
     }
-    print"Genome size calculated from sequence file to $genome_size bp\n";
+    print"Genome size calculated from fasta file to $genome_size bp\n";
     if (defined $gff_file) {
         foreach $contig (@contigs) {
             if (!defined $contig_seq{$contig}) {
-                print"\nError: Missmatch between contig id in gff and sequence file\n\n"; exit;
+                print"\nError: Missmatch between contig id in gff and fasta file\n\n"; exit;
             }
             @genes = @{ $contig_genes{$contig} };
             foreach $gene (@genes) {
@@ -344,12 +394,12 @@ sub read_genetic_code {
         chomp;
         @fields = split(/\t/);
         $codon_aminoacid{$fields[0]} = $fields[1];
-        #print"#$fields[0]#$fields[1]#\n";
     }
     close (INFILE);
 }
 
 sub get_snp_data_combined_vcf {
+    local($ok_sample);
     %nt = ('A', 1, 'T', 1, 'C', 1, 'G', 1);
     @samples = ();
     @samples_plus = ();
@@ -362,9 +412,13 @@ sub get_snp_data_combined_vcf {
         @fields = split(/\t/, $row);
         if (substr($row, 0, 6) eq "#CHROM") {
             for ($i = 9; $i < @fields; $i++) {
-                $samples[$i - 9] = $fields[$i];
+                $sample = $fields[$i];
+                $samples[$i - 9] = $sample;
+                $include_sample{$sample} = 1 if (!$sample_file);
+                $ok_sample++ if (defined $include_sample{$sample});
             }
             @samples_plus = (@samples, 'All_samples_combined');
+            $min_found_in = $ok_sample if ($min_found_in == 0);
         }
         next if (substr($row, 0, 1) eq "#");
         #next if (@fields == 1);
@@ -400,6 +454,8 @@ sub get_snp_data_combined_vcf {
         $locus_found{$locus} = 0;
         for ($i = 9; $i < @fields; $i++) {
             @subfields = split(/:/, $fields[$i]);
+            $sample = $samples[$i - 9];
+            next if (!defined $include_sample{$sample});
             if (@subfields == $nformat_fields) {
                 if ($vcf_format eq "GATK") {
                     @allele_count = split(/,/, $subfields[$count_ix]);
@@ -415,6 +471,7 @@ sub get_snp_data_combined_vcf {
                     if ($tot_count >= $min_count) {
                         $locus_found{$locus}++;
                         #print"$locus_found{$locus}\n";
+                        $sample_foundlocus{$sample}{$locus} = 1; # this is for estimating genome coverage
                     }
                 }
             }
@@ -427,6 +484,7 @@ sub get_snp_data_combined_vcf {
         $sample_locus_totcount{'All_samples_combined'}{$locus} = 0;
         for ($i = 9; $i < @fields; $i++) {
             $sample = $samples[$i - 9];
+            next if (!defined $include_sample{$sample});
             @subfields = split(/:/, $fields[$i]);
             next if (@subfields != $nformat_fields);
             if ($vcf_format eq "GATK") {
@@ -460,16 +518,29 @@ sub get_snp_data_combined_vcf {
     foreach $locus (keys %locus_found) {
         $found[$locus_found{$locus}]++;
     }
-    for ($i = 1; $i < @found; $i++) {
-        if (defined $found[$i]) {
-            print"Number of loci found $i times: $found[$i]\n"
-        } else {
-            print"Number of loci found $i times: 0\n"
-        }
+    $i = (@found - 1);
+    $cumulative_found = $found[$i];
+    print"Number of loci found $i times: $cumulative_found\n";
+    for ($i = (@found - 2); $i > 0; $i--) {
+        $cumulative_found = $cumulative_found + $found[$i];
+        print"Number of loci found >= $i times: $cumulative_found\n";
     }
+    if ((keys %sample_locus_allel_counts) == 0) {
+        print"Zero loci found fulfilling criteria\n";
+        print"No files will be generated\n";
+        exit;
+    }
+    # removing unwanted samples from @samples
+    local(@include);
+    for ($i = 0; $i < @samples; $i++) {
+        push(@include, $i) if (defined $include_sample{$samples[$i]});
+    }
+    @samples = @samples[@include];
+    @samples_plus = (@samples, 'All_samples_combined');
 }
 
 sub get_snp_data_combined_vcf_split_haplotypes {
+    local($ok_sample);
     %nt = ('A', 1, 'T', 1, 'C', 1, 'G', 1);
     @samples = ();
     @samples_plus = ();
@@ -483,9 +554,13 @@ sub get_snp_data_combined_vcf_split_haplotypes {
         @fields = split(/\t/, $row);
         if (substr($row, 0, 6) eq "#CHROM") {
             for ($i = 9; $i < @fields; $i++) {
-                $samples[$i - 9] = $fields[$i];
+                $sample = $fields[$i];
+                $samples[$i - 9] = $sample;
+                $include_sample{$sample} = 1 if (!$sample_file);
+                $ok_sample++ if (defined $include_sample{$sample});
             }
             @samples_plus = (@samples, 'All_samples_combined');
+            $min_found_in = $ok_sample if ($min_found_in == 0);
         }
         next if (substr($row, 0, 1) eq "#");
         $contig = $fields[0];
@@ -531,6 +606,8 @@ sub get_snp_data_combined_vcf_split_haplotypes {
             }
             $locus_found{$locus} = 0;
             for ($j = 9; $j < @fields; $j++) {
+                $sample = $samples[$j - 9];
+                next if (!defined $include_sample{$sample});
                 @subfields = split(/:/, $fields[$j]);
                 if (@subfields == $nformat_fields) {
                     if ($vcf_format eq "GATK") {
@@ -546,6 +623,7 @@ sub get_snp_data_combined_vcf_split_haplotypes {
                         }
                         if ($tot_count >= $min_count) {
                             $locus_found{$locus}++;
+                            $sample_foundlocus{$sample}{$locus} = 1; # this is for estimating genome coverage
                         }
                     }
                 }
@@ -597,21 +675,25 @@ sub get_snp_data_combined_vcf_split_haplotypes {
     foreach $locus (keys %locus_found) {
         $found[$locus_found{$locus}]++;
     }
-    $temp = 0;
-    for ($i = 1; $i < @found; $i++) {
-        if (defined $found[$i]) {
-            $temp = 1;
-            print"Number of loci found $i times: $found[$i]\n"
-        } else {
-            print"Number of loci found $i times: 0\n"
-        }
+    $i = (@found - 1);
+    $cumulative_found = $found[$i];
+    print"Number of loci found $i times: $cumulative_found\n";
+    for ($i = (@found - 2); $i > 0; $i--) {
+        $cumulative_found = $cumulative_found + $found[$i];
+        print"Number of loci found >= $i times: $cumulative_found\n";
     }
-    #if ($temp == 0) {
     if ((keys %sample_locus_allel_counts) == 0) {
         print"Zero loci found fulfilling criteria\n";
         print"No files will be generated\n";
         exit;
     }
+    # removing unwanted samples from @samples
+    local(@include);
+    for ($i = 0; $i < @samples; $i++) {
+        push(@include, $i) if (defined $include_sample{$samples[$i]});
+    }
+    @samples = @samples[@include];
+    @samples_plus = (@samples, 'All_samples_combined');
 }
 
 
@@ -670,6 +752,52 @@ sub subsample_allele_counts_dupl {
         }
     }
     @samples = @samples_plus = @samples_plus_dupl;
+}
+
+sub estimate_genome_coverage {
+    local($shared);
+    $est_num_loci = 0;
+    foreach $sample (@samples) {
+        $sample_estcov{$sample} = 0;
+        foreach $sample2 (@samples) {
+            next if ($sample2 eq $sample);
+            $shared = 0;
+            foreach $locus (keys %{$sample_foundlocus{$sample2}}) {
+                if (defined ($sample_foundlocus{$sample}{$locus})) {
+                    $shared++;
+                }
+            }
+            $sample_estcov{$sample} = $sample_estcov{$sample} + $shared/(keys %{$sample_foundlocus{$sample2}});
+            #local($temp) = $shared/(keys %{$sample_foundlocus{$sample2}});
+            #print " $sample $temp\n";
+        }
+        $sample_estcov{$sample} = $sample_estcov{$sample}/(@samples - 1); # this is the estimated proportion of the genome with coverage fulfilling the -min_count criteria
+        $est_num_loci = $est_num_loci + (keys %{$sample_foundlocus{$sample}})/$sample_estcov{$sample};
+        #local($temp) = (keys %{$sample_foundlocus{$sample}})/$sample_estcov{$sample};
+        #print "##$sample $num_loci{$sample} $sample_estcov{$sample} $temp\n";
+    }
+    $est_num_loci = $est_num_loci/@samples; # this is the estimated total number of loci with variation for all the samples, before splitting up haplotypes
+}
+
+sub estimate_genome_coverage_old {
+    local($shared);
+    foreach $sample (@samples) {
+        $sample_estcov{$sample} = 0;
+        foreach $sample2 (@samples) {
+            next if ($sample2 eq $sample);
+            $shared = 0;
+            foreach $locus (keys %{$sample_locus_totcount{$sample2}}) {
+                if (defined ($sample_locus_totcount{$sample}{$locus})) {
+                    $shared++;
+                }
+            }
+            $sample_estcov{$sample} = $sample_estcov{$sample} + $shared/(keys %{$sample_locus_totcount{$sample2}});
+            #local($temp) = $shared/(keys %{$sample_locus_totcount{$sample2}});
+            #print " $sample $temp\n";
+        }
+        $sample_estcov{$sample} = $sample_estcov{$sample}/(@samples - 1);
+        #print "#$sample $sample_estcov{$sample}\n\n";
+    }
 }
 
 sub calc_pi {
@@ -772,7 +900,6 @@ sub calc_per_gene_aminoacid_pi {
                         } else {
                             $sample_locus_gene_peptide_counts{$sample}{$locus}{$gene}{$peptide} = $sample_locus_allel_counts{$sample}{$locus}{$alleles[$i]};
                         }
-                        #print"\nLocus: $locus\nGene: $gene\nSample: $sample\nAllele: $alleles[$i]\nStrand: $gene_strand{$gene}\n>Gene_seq:\n$gene_seq{$gene}\n\n>Mod_seq:\n$mod_gene_seq\n\n>Mod_peptide:\n$peptide\n";
                     }
                     $locus_intra_pi = 0;
                     @peptides = (keys %{$sample_locus_gene_peptide_counts{$sample}{$locus}{$gene}});
@@ -807,7 +934,86 @@ sub calc_per_gene_aminoacid_pi {
     }
 }
 
-sub calc_fst { # is it more logical to only include the loci where any inter-pi exist for the sample pair, and calculate mean fst for these loci?
+sub calc_aminoacid_frequencies {
+    # calculate mean count (avrunda till närmaste heltal?) för varje aa, baserat på alla locus som överlappar en codon/aminosyra-position.
+    # först ta reda på vilka loci som överlappar varje position.
+    # skippa loci som har alleler av varierande längd (kan bli frameshifts)
+    foreach $contig (@contigs) {
+        @genes = @{ $contig_genes{$contig} };
+        foreach $gene (@genes) {
+            #next if ($gene ne "ID=PROKKA_MOD_00014");
+            #print"$gene\n";
+            $contig_seq = $contig_seq{$contig};
+            if ($gene_strand{$gene} eq "+") {
+                $gene_seq = substr($contig_seq, ($gene_start{$gene} - 1), $gene_length{$gene});
+                #print"$gene_seq\n";
+                @loci = (keys %{$gene_locus{$gene}});
+                next if (@loci == 0);
+                %codonposition_n_locus = ();
+                #print"loci @loci\n";
+                foreach $locus (@loci) {
+                    next if ($sample_locus_totcount{'All_samples_combined'}{$locus} == 0);
+                    @alleles = (keys %{$sample_locus_allel_counts{'All_samples_combined'}{$locus}});
+                    @fields = split(/\|/, $locus);
+                    #print"fields1 @fields\n";
+                    $pos = $fields[1];
+                    %lengths = ();
+                    for ($k = 0; $k < @alleles; $k++) {
+                        $length = length($alleles[$k]);
+                        $lengths{$length} = 1;
+                    }
+                    next if ((keys %lengths) > 1); # skip loci that have alleles that differ in length
+                    $gene_pos = $pos - $gene_start{$gene}; # 0 equals first nucleotide of first (i.e. start) codon
+                    $first_codon_pos = int($gene_pos/3); # 0 equals first codon (start codon)
+                    $last_codon_pos = int(($gene_pos + $length - 1)/3); # 0 equals first codon (start codon)
+                    for ($k = $first_codon_pos; $k <= $last_codon_pos; $k++) {
+                        $codonposition_n_locus{$k}{$locus} = 1;
+                        #print"pos locus $k $locus\n";
+                    }
+                }
+                foreach $codon_pos (keys %codonposition_n_locus) {
+                    %sample_n_includedlocus = ();
+                    foreach $locus (keys %{$codonposition_n_locus{$codon_pos}}) {
+                        @fields = split(/\|/, $locus);
+                        $pos = $fields[1];
+                        #print"Pos $pos\n";
+                        $gene_pos = $pos - $gene_start{$gene};
+                        #print"Gene_pos $gene_pos\n";
+                        @alleles = (keys %{$sample_locus_allel_counts{'All_samples_combined'}{$locus}});
+                        for ($k = 0; $k < @alleles; $k++) {
+                            $mod_gene_seq = $gene_seq;
+                            substr($mod_gene_seq, $gene_pos, length($alleles[$k])) = $alleles[$k];
+                            $mod_codon = substr($mod_gene_seq, $codon_pos*3, 3);
+                            $aminoacid = $codon_aminoacid{$mod_codon};
+                            foreach $sample (@samples_plus) {
+                                if (defined $sample_locus_totcount{$sample}{$locus}) {
+                                    $sample_n_includedlocus{$sample}{$locus} = 1;
+                                    $count = $sample_locus_allel_counts{$sample}{$locus}{$alleles[$k]};
+                                    if (defined $sample_gene_codon_aminoacid_counts{$sample}{$gene}{$codon_pos}{$aminoacid}) {
+                                        $sample_gene_codon_aminoacid_counts{$sample}{$gene}{$codon_pos}{$aminoacid} = $sample_gene_codon_aminoacid_counts{$sample}{$gene}{$codon_pos}{$aminoacid} + $count;
+                                    } else {
+                                        $sample_gene_codon_aminoacid_counts{$sample}{$gene}{$codon_pos}{$aminoacid} = $count;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    foreach $sample (@samples_plus) {
+                        if (defined $sample_n_includedlocus{$sample}) {
+                            $num = (keys %{$sample_n_includedlocus{$sample}});
+                            foreach $aminoacid (keys %{$sample_gene_codon_aminoacid_counts{$sample}{$gene}{$codon_pos}}) {
+                                $sample_gene_codon_aminoacid_counts{$sample}{$gene}{$codon_pos}{$aminoacid} = $sample_gene_codon_aminoacid_counts{$sample}{$gene}{$codon_pos}{$aminoacid}/$num;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+sub calc_fst {
     print "Sample1\tSample2\tpi_1\tpi_2\tpi_1-2\tfst\n";
     for ($ix1 = 0; $ix1 < @samples; $ix1++) {
         $sample1 = $samples[$ix1];
@@ -854,7 +1060,7 @@ sub calc_fst { # is it more logical to only include the loci where any inter-pi 
             $sample1_pi = $sample1_pi/$genome_size;
             $sample2_pi = $sample2_pi/$genome_size;
             if ($inter_pi > 0) {
-                #$fst = 1 - 0.5*($sample_pi{$sample1} + $sample_pi{$sample2})/$inter_pi; # intra pi values only based on all loci
+                #$fst = 1 - 0.5*($sample_pi{$sample1} + $sample_pi{$sample2})/$inter_pi; # intra pi values based on all loci
                 $fst = 1 - 0.5*($sample1_pi + $sample2_pi)/$inter_pi # intra pi values only based on shared loci
             } else {
                 $fst = "NA";
@@ -929,7 +1135,130 @@ sub calc_per_gene_fst {
     }
 }
 
-# double check!
+sub calc_per_gene_fst_permuted {
+    local $perm;
+    for ($ix1 = 0; $ix1 < @samples; $ix1++) {
+        $sample1 = $samples[$ix1];
+        #print"Sample1 $sample1\n";
+        for ($ix2 = $ix1 + 1; $ix2 < @samples; $ix2++) {
+            $sample2 = $samples[$ix2];
+            #print"Sample2 $sample2\n";
+            local @locus_sample1_pi = ();
+            local @locus_sample2_pi = ();
+            local @locus_inter_pi = ();
+            local %gene_npermloci = ();
+            #$apa_test = -1; # for testing
+            #%gene_apa_test = (); # for testing
+            foreach $contig (@contigs) {
+                #print "Contig $contig\n";
+                @genes = @{ $contig_genes{$contig} };
+                foreach $gene (@genes) {
+                    #print "Gene $gene\n";
+                    @loci = (keys %{$gene_locus{$gene}});
+                    next if (@loci == 0);
+                    foreach $locus (@loci) { # add locus inter and intra pi values to array
+                        $inter_pi = 0;
+                        #print"Locus $locus\n";
+                        next if (!defined $sample_locus_allel_counts{$sample1}{$locus});
+                        next if (!defined $sample_locus_allel_counts{$sample2}{$locus});
+                        @alleles1 = (keys %{$sample_locus_allel_counts{$sample1}{$locus}});
+                        @alleles2 = (keys %{$sample_locus_allel_counts{$sample2}{$locus}});
+                        $tot_count1 = $sample_locus_totcount{$sample1}{$locus};
+                        $tot_count2 = $sample_locus_totcount{$sample2}{$locus};
+                        #print"Alleles1: @alleles1 Alleles2: @alleles2\n";
+                        for ($i = 0; $i < @alleles1; $i++) {
+                            #print"Allele 1: $alleles1[$i]\n";
+                            $counts_1 = $sample_locus_allel_counts{$sample1}{$locus}{$alleles1[$i]};
+                            #print"Counts1: $counts_1\n";
+                            for ($j = 0; $j < @alleles2; $j++) {
+                                next if ($alleles1[$i] eq $alleles2[$j]);
+                                #print"Allele 2: $alleles2[$j]\n";
+                                $counts_2 = $sample_locus_allel_counts{$sample2}{$locus}{$alleles2[$j]};
+                                #print"Counts2: $counts_2\n";
+                                $inter_pi = $inter_pi + ($counts_1/$tot_count1)*($counts_2/$tot_count2);
+                                #print"inter_pi $inter_pi\n";
+                            }
+                        }
+                        if ($inter_pi > 0) { # note, only loci with inter_pi for the specific sample pair will be included
+                            #$apa_test++; # for testing
+                            push(@locus_sample1_pi, $sample_locus_pi{$sample1}{$locus});
+                            push(@locus_sample2_pi, $sample_locus_pi{$sample2}{$locus});
+                            push(@locus_inter_pi, $inter_pi);
+                            if (defined $gene_npermloci{$gene}) {
+                                $gene_npermloci{$gene}++;
+                            } else {
+                                $gene_npermloci{$gene} = 1;
+                            }
+                            #$gene_apa_test{$gene}{$apa_test} = 1; # for testing
+                        }
+                    }
+                }
+            }
+            foreach $contig (@contigs) {
+                #print "Contig $contig\n";
+                @genes = @{ $contig_genes{$contig} };
+                foreach $gene (@genes) {
+                    if (defined $gene_npermloci{$gene}) {
+                        for ($perm = 0; $perm < $n_fst_permutations; $perm++) {
+                            $inter_pi = 0;
+                            $sample1_pi = $sample2_pi = 0;
+                            for ($i = 0; $i < $gene_npermloci{$gene}; $i++) {
+                                $ix = int(rand(@locus_sample1_pi));
+                                $sample1_pi = $sample1_pi + $locus_sample1_pi[$ix];
+                                #splice(@locus_sample1_pi, $ix, 1); # adding this gives sampling without replacement
+                                $sample2_pi = $sample2_pi + $locus_sample2_pi[$ix];
+                                #splice(@locus_sample2_pi, $ix, 1); # adding this gives sampling without replacement
+                                $inter_pi = $inter_pi + $locus_inter_pi[$ix];
+                                #splice(@locus_inter_pi, $ix, 1); # adding this gives sampling without replacement
+                            }
+                            $inter_pi = $inter_pi/$gene_length{$gene};
+                            $sample1_pi = $sample1_pi/$gene_length{$gene};
+                            $sample2_pi = $sample2_pi/$gene_length{$gene};
+                            if ($inter_pi > 0) {
+                                $fst = 1 - 0.5*($sample1_pi + $sample2_pi)/$inter_pi;
+                                $fst = sprintf("%.4f", $fst);
+                            } else {
+                                $fst = "NA"; # i.e. no intra-pi in any of the two samples and consequently no inter-pi.
+                            }
+                            $sample_sample_gene_fst_perm{$sample1}{$sample2}{$gene}{$perm} = $fst;
+                            $sample_sample_gene_fst_perm{$sample2}{$sample1}{$gene}{$perm} = $fst;
+                            #print"$gene $sample1 $sample2 $perm $sample1_pi $sample2_pi $inter_pi $fst\n";
+                        }
+                        
+                        ## temporary testing code
+                        #print"temporary testing code gene: $gene\n";
+                        #$perm = 0;
+                        #$inter_pi = 0;
+                        #$sample1_pi = $sample2_pi = 0;
+                        #foreach $ix (keys %{$gene_apa_test{$gene}}) {
+                        #    $sample1_pi = $sample1_pi + $locus_sample1_pi[$ix];
+                        #    #splice(@locus_sample1_pi, $ix, 1); # adding this gives sampling without replacement
+                        #    $sample2_pi = $sample2_pi + $locus_sample2_pi[$ix];
+                        #    #splice(@locus_sample2_pi, $ix, 1); # adding this gives sampling without replacement
+                        #    $inter_pi = $inter_pi + $locus_inter_pi[$ix];
+                        #    #splice(@locus_inter_pi, $ix, 1); # adding this gives sampling without replacement
+                        #}
+                        #$inter_pi = $inter_pi/$gene_length{$gene};
+                        #$sample1_pi = $sample1_pi/$gene_length{$gene};
+                        #$sample2_pi = $sample2_pi/$gene_length{$gene};
+                        #if ($inter_pi > 0) {
+                        #    $fst = 1 - 0.5*($sample1_pi + $sample2_pi)/$inter_pi;
+                        #    $fst = sprintf("%.4f", $fst);
+                        #} else {
+                        #    $fst = "NA"; # i.e. no intra-pi in any of the two samples and consequently no inter-pi.
+                        #}
+                        #$sample_sample_gene_fst_perm{$sample1}{$sample2}{$gene}{$perm} = $fst;
+                        #$sample_sample_gene_fst_perm{$sample2}{$sample1}{$gene}{$perm} = $fst;
+                        ##print"$gene $sample1 $sample2 $perm $sample1_pi $sample2_pi $inter_pi $fst\n";
+                        ## end temporary testing code
+
+                    }
+                }
+            }
+        }
+    }
+}
+
 sub calc_per_gene_aminoacid_fst {
     foreach $contig (@contigs) {
         #print "Contig $contig\n";
@@ -1002,16 +1331,11 @@ sub calc_pN_pS {
                 $TN = 0; # possible non-synonomous polymorphisms
                 $TS = 0; # possible synonomous polymorphisms
                 # $pNpS = ($PN/$TN) / ($PS/$TS) # NA if $PS = 0;
-                # pN equals the fraction of polymorphic nonsynonymous sites, pS equals the fraction of polymorphic synonymous sites (Simmons et al, 2008)
+                # pN equals the fraction of polymorphic nonsynonymous sites, pS equals the fraction of polymorphic synonymous sites
                 $contig = $gene_contig{$gene};
                 $contig_seq = $contig_seq{$contig};
                 $gene_seq = substr($contig_seq, ($gene_start{$gene} - 1), $gene_length{$gene});
                 # Gene on "+" strand
-                
-                #@loci = (keys %{$sample_locus_allel_counts{$sample}});
-                #$temp = @loci;
-                #print"sample: $sample gene: $gene num_loci: $temp\n";
-                
                 if ($gene_strand{$gene} eq "+") {
                     #print"\n$contig $gene $sample\n$gene_seq\n";
                     for ($i = 3; $i < $gene_length{$gene}; $i = $i + 3) { # skipping the start codon
@@ -1034,7 +1358,7 @@ sub calc_pN_pS {
                                 }
                                 for ($k = 0; $k < @alleles; $k++) {
                                     if (length($alleles[$k]) != 1) {
-                                        print "\nError: Variant > 1 bp. Violates pN/pS calculation.\n\n"; die;
+                                        print "\nError: Variant > 1 bp. Violates pN/pS calculation. Consider not running in --keep_haplotypes mode.\n\n"; die;
                                     }
                                     if ($sample_locus_allel_counts{$sample}{$locus}{$alleles[$k]} > $base_counts) {
                                         $base_counts = $sample_locus_allel_counts{$sample}{$locus}{$alleles[$k]};
@@ -1074,7 +1398,6 @@ sub calc_pN_pS {
                                     }
                                 }
                             }
-
                         }
                     }
                 }
@@ -1191,13 +1514,30 @@ sub make_revcomp {
 }
 
 sub print_output_to_file {
+    print"$outprefix.logfile.txt\n";
+    open (OUT, ">$outprefix.logfile.txt");
+    print OUT "$logtext";
+    close(OUT);
+    ###
+    local($sample_norm_pi);
     print"$outprefix.intradiv.txt\n";
     open (OUT, ">$outprefix.intradiv.txt");
-    print OUT "Sample\tIntra_pi\tNum_loci\tTotal_num_alleles\tAverage_read_depth\n";
+    print OUT "Sample\tIntra_pi\tNorm_intra_pi\tEst_genome_cov\tNum_loci\tTotal_num_alleles\tAverage_read_depth\n";
     foreach $sample (@samples_plus) {
-        print OUT "$sample\t$sample_pi{$sample}\t$num_loci{$sample}\t$sample_totalleles{$sample}\t$sample_avcount{$sample}\n";
+        if (defined $sample_estcov{$sample}) {
+            $sample_norm_pi = $sample_pi{$sample}*$est_num_loci/$num_loci{$sample};
+            print OUT "$sample\t$sample_pi{$sample}\t$sample_norm_pi\t$sample_estcov{$sample}\t$num_loci{$sample}\t$sample_totalleles{$sample}\t$sample_avcount{$sample}\n";
+            #print "#$sample $sample_estcov{$sample} $sample_pi{$sample} $sample_norm_pi $num_loci{$sample} $est_num_loci\n";
+        } else {
+            print OUT "$sample\t$sample_pi{$sample}\tNA\tNA\t$num_loci{$sample}\t$sample_totalleles{$sample}\t$sample_avcount{$sample}\n";
+            #print "#$sample NA $sample_pi{$sample} NA $num_loci{$sample} $est_num_loci\n";
+        }
     }
     close(OUT);
+    if ($pi_only) {
+        print"\n### Finished pogenom succesfully (--pi_only mode) ###\n\n";
+        exit();
+    }
     ###
     print"$outprefix.intradiv-per-locus.txt\n";
     open (OUT, ">$outprefix.intradiv-per-locus.txt");
@@ -1257,6 +1597,49 @@ sub print_output_to_file {
         }
     }
     close(OUT);
+    ###
+    if ($gff_file) {
+        print"$outprefix.aminoacid-freqs.txt\n";
+        @aas = ('A','C','D','E','F','G','H','I','K','L','M','N','P','Q','R','S','T','V','W','Y','*');
+        open (OUT, ">$outprefix.aminoacid-freqs.txt");
+        print OUT "Contig\tGene\tAminoAcidPosition";
+        foreach $sample (@samples_plus) {
+            foreach $aminoacid (@aas) {
+                print OUT "\t$sample $aminoacid";
+            }
+        }
+        print OUT "\n";
+        foreach $contig (@contigs) {
+            #print "$contig\n";
+            @genes = @{ $contig_genes{$contig} };
+            #print "@genes\n"; die;
+            foreach $gene (@genes) {
+                @codon_positions = (keys %{$sample_gene_codon_aminoacid_counts{'All_samples_combined'}{$gene}});
+                @codon_positions = sort {$a <=> $b} @codon_positions;
+                #print "@codon_positions\n";
+                foreach $codon_pos (@codon_positions) {
+                    $output_codon_pos = $codon_pos + 1;
+                    print OUT "$contig\t$gene\t$output_codon_pos"; # 1 is first codon (start codon)
+                    foreach $sample (@samples_plus) {
+                        if (defined $sample_gene_codon_aminoacid_counts{$sample}{$gene}{$codon_pos}) {
+                            foreach $aminoacid (@aas) {
+                                if (defined $sample_gene_codon_aminoacid_counts{$sample}{$gene}{$codon_pos}{$aminoacid}) {
+                                    print OUT "\t$sample_gene_codon_aminoacid_counts{$sample}{$gene}{$codon_pos}{$aminoacid}";
+                                } else {
+                                    print OUT "\t0";
+                                }
+                            }
+                        } else {
+                            foreach $aminoacid (@aas) {
+                                print OUT "\tNA";
+                            }
+                        }
+                    }
+                    print OUT "\n";
+                }
+            }
+        }
+    }
     ###
     if ($gff_file) {
         print"$outprefix.intradiv-per-gene.txt\n";
@@ -1381,6 +1764,41 @@ sub print_output_to_file {
                             print OUT "\t$sample_sample_gene_fst{$samples[$ix1]}{$samples[$ix2]}{$gene}";
                         } else {
                             print OUT "\tNA";
+                        }
+                    }
+                }
+                print OUT "\n";
+            }
+        }
+    }
+    ###
+    if ((@samples > 1) and $gff_file and $n_fst_permutations) {
+        print"$outprefix.permuted-fst-per-gene.txt\n";
+        open (OUT, ">$outprefix.permuted-fst-per-gene.txt");
+        print OUT "Contig\tGene\tLength\tStart\tEnd\tStrand\tNum_loci";
+        for ($i = 0; $i < $n_fst_permutations; $i++) {
+            $perm = $i + 1;
+            for ($ix1 = 0; $ix1 < @samples; $ix1++) {
+                for ($ix2 = ($ix1 + 1); $ix2 < @samples; $ix2++) {
+                    print OUT "\t$samples[$ix1] $samples[$ix2] #$perm";
+                }
+            }
+        }
+        print OUT "\n";
+        foreach $contig (@contigs) {
+            @genes = @{ $contig_genes{$contig} };
+            foreach $gene (@genes) {
+                $num_loci = (keys %{$gene_locus{$gene}});
+                print OUT "$contig\t$gene\t$gene_length{$gene}\t$gene_start{$gene}\t$gene_end{$gene}\t$gene_strand{$gene}\t$num_loci";
+                for ($i = 0; $i < $n_fst_permutations; $i++) {
+                    for ($ix1 = 0; $ix1 < @samples; $ix1++) {
+                        for ($ix2 = ($ix1 + 1); $ix2 < @samples; $ix2++) {
+                            #print"$ix1 $ix2\n";
+                            if (defined $sample_sample_gene_fst_perm{$samples[$ix1]}{$samples[$ix2]}{$gene}{$i}) {
+                                print OUT "\t$sample_sample_gene_fst_perm{$samples[$ix1]}{$samples[$ix2]}{$gene}{$i}";
+                            } else {
+                                print OUT "\tNA";
+                            }
                         }
                     }
                 }
