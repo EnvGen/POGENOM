@@ -9,7 +9,7 @@ workdir: config["workdir"]
 mapqual = config["mapqual"]
 thrs = config["threads"]
 reads_ext = config["reads_ext"]
-mags_ext = config["mags_ext"]
+mags_ext = config["genomes_ext"]
 dataset=config["dataset"]
 
 #--------------Checking samtools view key parameters after reads mapping ------
@@ -22,7 +22,7 @@ else:
 def MAGs_prefix():
 
   prefix_MAGs = []
-  MAGs_path = os.path.join(config["workdir"], "RAW_DATA", "MAGs", config["dataset"])
+  MAGs_path = os.path.join(config["workdir"], "RAW_DATA", "Genomes", config["dataset"])
   MAGs_list = [i for i in os.listdir(MAGs_path) if i.endswith(mags_ext)] # file list
   for mag in MAGs_list:
       prefix_MAGs.append(mag.replace(mags_ext, ""))
@@ -43,11 +43,11 @@ rule step1_all:
          expand("02_MAPPING/{dataset}/{prefix_mag}/{sample}_{prefix_mag}_mpq_{mapqual}_RG_sorted_position.bam.bai", dataset=dataset, prefix_mag = prefix_MAGs, mapqual = mapqual, sample=samples)
 
 rule indexing:
-    input: expand("RAW_DATA/MAGs/{dataset}/{prefix_mag}{mags_ext}", dataset=dataset, prefix_mag = prefix_MAGs, mags_ext=mags_ext)
+    input: expand("RAW_DATA/Genomes/{dataset}/{prefix_mag}{mags_ext}", dataset=dataset, prefix_mag = prefix_MAGs, mags_ext=mags_ext)
     output: expand("01_INDEXING/{{dataset}}/{{prefix_mag}}/{{prefix_mag}}.{suffix1}.bt2", dataset=dataset, suffix1 = range(1,5), prefix_mag = prefix_MAGs),
-            expand("01_INDEXING/{{dataset}}/{{prefix_mag}}/{{prefix_mag}}.rev.{suffix}.bt2", dataset=dataset, suffix = range(1,3), prefix_mag = prefix_MAGs)  #According to bowtie2 manual (6 suffixes)
+            expand("01_INDEXING/{{dataset}}/{{prefix_mag}}/{{prefix_mag}}.rev.{suffix}.bt2", dataset=dataset, suffix = range(1,3), prefix_mag = prefix_MAGs)  
     params: ref = "01_INDEXING/{dataset}/{prefix_mag}/{prefix_mag}",
-            input = "RAW_DATA/MAGs/{dataset}/{prefix_mag}"+config["mags_ext"],
+            input = "RAW_DATA/Genomes/{dataset}/{prefix_mag}"+config["genomes_ext"],
     version:"2.3.4.3"
     threads: thrs
     message: "indexing {params.input} sequence"

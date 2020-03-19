@@ -1,6 +1,6 @@
 import os
 
-#workflow for input file - POGENOM - step2 one bam file
+#workflow for input file - POGENOM - step2 one bam file -prefilt
 
 #-----DATA ---names-----------------------------------------------------------
 configfile: "./config_files/Input_POGENOM_config.json"
@@ -8,25 +8,25 @@ workdir: config["workdir"]
 mapqual = config["mapqual"]
 thrs = config["threads"]
 mags_ext = config["genomes_ext"]
-dataset=config["dataset"]
+dataset=config["dataset"]+"_prefilt"
 prefix_MAGs = config["mag_name"]
 
 #---per sample---------------------
 
-def files_mergeables_per_mag():
+def files_mergeables_per_mag(dataset):
     mag=config["mag_name"]
-    MAGs_dir = os.path.join(config["workdir"], "04_mergeable", config["dataset"], mag)
+    MAGs_dir = os.path.join(config["workdir"], "04_mergeable", dataset, mag)
     mergable_files = []
     bam_files = [b for b in os.listdir(MAGs_dir) if b.endswith(".bam")] # list of bam files
     if len(bam_files) == 1:
-         mergable_files.append("04_mergeable/"+config["dataset"]+"/"+mag+"/"+bam_files[0])
+         mergable_files.append("04_mergeable/"+config["dataset"]+"_prefilt/"+mag+"/"+bam_files[0])
          return mergable_files
 
 #------------------
 
 rule freebayes:
-     input: mag=expand("RAW_DATA/Genomes/{dataset}/{prefix_mag}.fa", dataset=dataset, prefix_mag = prefix_MAGs),
-           bam=files_mergeables_per_mag()
+     input: mag=expand("RAW_DATA/Genomes/{data}/{prefix_mag}.fa", data=config["dataset"], prefix_mag = prefix_MAGs),
+           bam=files_mergeables_per_mag(dataset)
      output: out1=expand("06_VCF/{dataset}/{prefix_mag}_mpq_{mapqual}.vcf", dataset=dataset, prefix_mag = prefix_MAGs, mapqual = mapqual)
      threads: thrs
      params: pr=config["freebayes_parameters"], qual=config["vcffilter_qual"],

@@ -45,7 +45,7 @@ Now, go to the directory Input_POGENOM::
 
 This directory contains:
 
-1. Empty RAW_DATA/Reads and RAW_DATA/MAGs folders
+1. Empty RAW_DATA/Reads and RAW_DATA/Genomes folders
 2. Config_file, snakefiles and src directories
 3. The Input_POGENOM.sh script.
 

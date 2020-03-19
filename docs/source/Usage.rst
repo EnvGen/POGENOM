@@ -4,7 +4,7 @@ Usage
 Organise your data
 ^^^^^^^^^^^^^^^^
 
-The pipeline is capable of analyzing several datasets with samples (paired fastq read files) and several genomes (fasta files). The minimum data required is one dataset with one pair of read files (forward and reverse) and one genome.
+The pipeline is capable of analysing several datasets with samples (paired fastq read files) and several genomes (fasta files). The minimum data required is one dataset with one pair of read files (forward and reverse) and one genome.
 
 Input data (reads and genomes) must be stored in the directory RAW_DATA/, as explained below:
 
@@ -87,6 +87,19 @@ In the "Input_POGENOM_config.json" file, set the parameters to be used. It conta
 "temp_sub_Reads_dir": "PREFILT",
   Directory storing the subsampled reads when running the pipeline using "mode": "prefilt". The size of this directory will be    "fraction" * the size of "dataset".
 
+ "remove_subreads": "no",
+  Remove the Reads subset directory (i.e., <temp_sub_Reads_dir>/Reads/) after usage. This Reads directory is created during sample prescreening, when "mode": "prefilt" is used.  
+
+"min_coverage": 10,
+  Minimum genome median coverage per sample per genome, integer. Samples below this threshold will not be included in the subsequent comparative analysis.
+  When "mode": "prefilt", and "fraction" : "0.10", a min_coverage value lower than 10 will select all samples, and the prescreening will be obsolete.
+
+"min_breadth": 40,
+  Minimum genome breadth per sample per genome. Integer.
+
+"min_bsq_for_cov_median_calculation": 15,
+  Minimum base quality when counting the number of bases per genome position during coverage calculation. Integer number.
+
 "threads": 15,
   Number of threads.
 
@@ -114,16 +127,6 @@ In the "Input_POGENOM_config.json" file, set the parameters to be used. It conta
   Filters used for selecting mapped reads to be included in the BAM file.
   Here it selects only paired reads (-f 2) and avoids optical duplicates (-F 1024).
   If no filters are required, then set an empty string ("samtools_view_alignment_extra_filters": "",)
-
-"min_coverage": 10,
-  Minimum genome coverage per sample per genome (higher than, not included), integer.
-  When "mode": "prefilt", a min_coverage value lower than 10 will select all samples, and the prefilter will be obsolete.
-
-"min_breadth": 40,
-  Minimum genome breadth per sample per genome. Integer.
-
-"min_bsq_for_cov_median_calculation": 15,
-  Minimum base quality when counting the number of bases per genome position during coverage calculation. Integer number.
 
 "freebayes_parameters": "-C 4 -p 1 --pooled-continuous --read-max-mismatch-fraction 0.05 --min-alternate-fraction 0.01 -q 15",
   Parameters used during variant calling.

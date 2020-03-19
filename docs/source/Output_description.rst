@@ -14,6 +14,10 @@ B) 02_MAPPING.
 
     02_MAPPING/<dataset>/<genome_name>/<sample_name>_<genome_name>_mpq_<mapping_quality>_RG_sorted_position.bam
 
+ The Bowtie2 log files are stored in this directory. Example of filename::
+
+    02_MAPPING/log_bowtie2/<dataset>/<genome_name>/<sample_name>_<genome_name>_mpq_<mapqual>.log
+
 C) 03_MPILEUP.
  A subdirectory per dataset and genome is created. It contains the samtools mpileup file, in which the coverage per genome position is  stored.
  Example of filename::
@@ -41,7 +45,7 @@ Intermediate files when "mode": "prefilt"
 
 When "mode": "prefilt", the suffix "_prefilt" will be added to <dataset> in intermediate files B-E, e.g., 05_BAM_merged/<dataset>_prefilt/<genome_name>_merged_sorted_position.bam
 
-Additionally, the directory PREFILT/ is created and contains:
+Additionally, the directory PREFILT/<dataset> is created and contains:
 
 02_MAPPING, 03_MPILEUP
 
@@ -53,6 +57,9 @@ The directories, 02_MAPPING, and 03_MPILEUP have the same format as described ab
 The reads used to generated those files are the Reads subsets, which are stored in the folder <temp_sub_Reads_dir>/Reads/.
 
 The corresponding log file for these steps is log_files/samples_filter.log
+The Bowtie2 log files generated when mapping Reads subset, are stored in PREFILT/<dataset>/02_MAPPING. Example of filename::
+
+    PREFILT/<dataset>/02_MAPPING/log_bowtie2/<genome_name>/<sample_name>_<genome_name>_mpq_<mapqual>.log 
 
 
 VCF files
