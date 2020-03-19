@@ -1,0 +1,96 @@
+import os
+
+#workflow for input file - POGENOME - step 1
+
+#snakemake -s Input_POGENOM/snakefiles/step_pogenom_input --config my_mag="" my_sample=""
+
+#-----DATA ---names-----------------------------------------------------------
+configfile: "./config_files/Input_POGENOM_config.json"
+workdir: config["workdir"]
+mapqual = config["mapqual"]
+thrs = config["threads"]
+reads_ext = config["reads_ext"]
+mags_ext = config["mags_ext"]
+dataset=config["dataset"]
+
+#------------------
+prefix_MAGs = config["my_mag"]
+samples =[ i for i in config["my_samples"].split(",")]
+
+#--------------Checking samtools view key parameters after reads mapping ------
+if config["samtools_view_alignment_extra_filters"] == "" :
+      sam_view_params = "-Sbh"
+else:
+      sam_view_params = "-Sbh "+config["samtools_view_alignment_extra_filters"]
+#------------------------------------------------------------------
+
+rule step1_all:
+  input: expand("03_MPILEUP/{dataset}/{prefix_mag}/{sample}_{prefix_mag}_mpq_{mapqual}_mpileup", dataset=dataset, prefix_mag = prefix_MAGs, mapqual = mapqual, sample=samples),
+         expand("02_MAPPING/{dataset}/{prefix_mag}/{sample}_{prefix_mag}_mpq_{mapqual}_RG_sorted_position.bam.bai", dataset=dataset, prefix_mag = prefix_MAGs, mapqual = mapqual, sample=samples)
+
+rule mapping:
+  input: expand("01_INDEXING/{dataset}/{prefix_mag}/{prefix_mag}.{suffix1}.bt2", dataset=dataset, suffix1 = range(1,5), prefix_mag = prefix_MAGs),
+         expand("01_INDEXING/{dataset}/{prefix_mag}/{prefix_mag}.rev.{suffix}.bt2", dataset=dataset, suffix = range(1,3), prefix_mag = prefix_MAGs),
+         fwd = expand("RAW_DATA/Reads/{dataset}/{sample}{fwdi}{reads_ext}", dataset=dataset, sample=samples, reads_ext = reads_ext, fwdi=config["fwd_index"]),
+         rev = expand("RAW_DATA/Reads/{dataset}/{sample}{revi}{reads_ext}", dataset=dataset, sample= samples, reads_ext =reads_ext, revi=config["rev_index"])
+  output: temp(expand("02_MAPPING/{{dataset}}/{{prefix_mag}}/{{sample}}_{{prefix_mag}}_mpq_{mapqual}_sorted_position.bam", dataset=dataset, prefix_mag = prefix_MAGs, mapqual = mapqual, sample=samples))
+  params: index = "01_INDEXING/{dataset}/{prefix_mag}/{prefix_mag}",
+          mapqual = mapqual,
+          bowtie2 = config["bowtie2_params"],
+          groupfwd2 = "RAW_DATA/Reads/{dataset}/{sample}"+config["fwd_index"]+config["reads_ext"],
+          grouprev2 = "RAW_DATA/Reads/{dataset}/{sample}"+config["rev_index"]+config["reads_ext"],
+          view = sam_view_params
+  log: expand("02_MAPPING/log_bowtie2/{{dataset}}/{{prefix_mag}}/{{sample}}_{{prefix_mag}}_mpq_{mapqual}.log", dataset=dataset, prefix_mag = prefix_MAGs, mapqual = mapqual, sample=samples)
+  threads: thrs
+  message: "mapping reads to {params.index} \nfwd: {params.groupfwd2}\nrev: {params.grouprev2}\n mapping quality > {params.mapqual} \n and sorting mapping reads by position"
+  shell: """
+             bowtie2 {params.bowtie2} -p {threads} -x {params.index} -1 {params.groupfwd2} -2 {params.grouprev2} 2> {log} | samtools view {params.view} -q {params.mapqual} --threads {threads} | samtools sort -o {output} --threads {threads}
+         """
+rule add_rg:
+    input: expand("02_MAPPING/{dataset}/{prefix_mag}/{sample}_{prefix_mag}_mpq_{mapqual}_sorted_position.bam", dataset=dataset, prefix_mag = prefix_MAGs, mapqual = mapqual, sample=samples)
+    output: expand("02_MAPPING/{{dataset}}/{{prefix_mag}}/{{sample}}_{{prefix_mag}}_mpq_{{mapqual}}_RG_sorted_position.bam", dataset=dataset, prefix_mag = prefix_MAGs, mapqual = mapqual, sample=samples)
+    params: inp="02_MAPPING/{dataset}/{prefix_mag}/{sample}_{prefix_mag}_mpq_{mapqual}_sorted_position.bam",
+            outp="02_MAPPING/{dataset}/{prefix_mag}/{sample}_{prefix_mag}_mpq_{mapqual}_RG_sorted_position.bam",
+            smp="{sample}"
+    threads: thrs
+    message: "adding RG name {params.smp} to bam files {params.inp} "
+    shell: """
+               picard AddOrReplaceReadGroups I={params.inp} O={params.outp} RGID={params.smp} RGLB=A RGPL=illumina RGPU=B RGSM={params.smp}
+           """
+
+rule indexing_reads_mapping:
+  input: expand("02_MAPPING/{dataset}/{prefix_mag}/{sample}_{prefix_mag}_mpq_{mapqual}_RG_sorted_position.bam", dataset=dataset, prefix_mag = prefix_MAGs, mapqual = mapqual, sample=samples)
+  output: expand("02_MAPPING/{{dataset}}/{{prefix_mag}}/{{sample}}_{{prefix_mag}}_mpq_{{mapqual}}_RG_sorted_position.bam.bai", dataset=dataset, prefix_mag = prefix_MAGs, mapqual = mapqual, sample=samples)
+  params: input="02_MAPPING/{dataset}/{prefix_mag}/{sample}_{prefix_mag}_mpq_{mapqual}_RG_sorted_position.bam"
+  version:"1.9"
+  threads: config["threads"]
+  message: "indexing sorted reads mapping from {params.input}"
+  shell: "samtools index {params.input} -@ {threads}"
+
+rule mpileup_and_coverage:
+  input: expand("02_MAPPING/{dataset}/{prefix_mag}/{sample}_{prefix_mag}_mpq_{mapqual}_RG_sorted_position.bam", dataset=dataset, prefix_mag = prefix_MAGs, mapqual = mapqual, sample=samples)
+  output: expand("03_MPILEUP/{{dataset}}/{{prefix_mag}}/{{sample}}_{{prefix_mag}}_mpq_{{mapqual}}_mpileup", dataset=dataset, prefix_mag = prefix_MAGs, mapqual = mapqual, sample=samples)
+  params: input="02_MAPPING/{dataset}/{prefix_mag}/{sample}_{prefix_mag}_mpq_{mapqual}_RG_sorted_position.bam",
+          out="03_MPILEUP/{dataset}/{prefix_mag}/{sample}_{prefix_mag}_mpq_{mapqual}_mpileup",
+          merg="04_mergeable/{dataset}/{prefix_mag}/{sample}_{prefix_mag}_mpq_{mapqual}_RG_sorted_position_subsampled.bam",
+          mag="{prefix_mag}",
+          dataset="{dataset}",
+          sp="{sample}",
+          mincov=int(config["min_coverage"]),
+          minbreadth=int(config["min_breadth"]),
+          minbasequal=int(config["min_bsq_for_cov_median_calculation"]),
+          threads=int(config["threads"])
+  message: "Samtools mpileup and calculating coverage, breadth and filtering {params.input} file"
+  shell: """
+          samtools mpileup -d 1000000 -Q {params.minbasequal} -a {params.input} > {params.out}
+          bash src/cov_bdrth_in_dataset.sh {params.out} {params.input} {params.merg} {params.mag} {params.mincov} {params.minbreadth} {params.threads} {params.dataset} {params.sp}
+         """
+rule vcf:
+    input: expand("03_MPILEUP/{dataset}/{prefix_mag}/{sample}_{prefix_mag}_mpq_{mapqual}_mpileup", dataset=dataset, prefix_mag = prefix_MAGs, mapqual = mapqual, sample=samples)
+    output: expand("06_VCF/{dataset}/{prefix_mag}_samples.txt", dataset=dataset, prefix_mag = prefix_MAGs)
+    params: mag = config["my_mag"],
+            wd=config["workdir"],
+            path="04_mergeable/"+config["dataset"],
+            dts=config["dataset"]
+    threads: config["threads"]
+    shell: "bash src/sorting_per_MAG.sh {params.mag} {params.wd} {params.path} {threads} {params.dts}"

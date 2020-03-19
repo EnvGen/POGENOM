@@ -1,0 +1,95 @@
+import os
+
+#workflow for input file - POGENOM - step filter
+
+#-----DATA ---names-----------------------------------------------------------
+configfile: "./config_files/Input_POGENOM_config.json"
+workdir: config["workdir"] #it must be an absolut path
+mapqual = config["mapqual"]
+thrs = config["threads"]
+reads_ext = config["reads_ext"]
+mags_ext = config["mags_ext"]
+MAGs_dir = os.path.join(config["workdir"], "RAW_DATA", "MAGs", "prefilt")
+READS_dir = os.path.join(config["workdir"], config["temp_sub_Reads_dir"], "Reads")
+fraction = config["fraction"]
+dataset=config["dataset"]
+
+#--------------Checking samtools view key parameters after reads mapping ------
+if config["samtools_view_alignment_extra_filters"] == "" :
+      sam_view_params = "-Sbh"
+else:
+      sam_view_params = "-Sbh "+config["samtools_view_alignment_extra_filters"]
+#------------------------------------------------------------------
+
+prefix_MAGs = [ m.split(mags_ext)[0] for m in os.listdir(MAGs_dir) if m.endswith(mags_ext)]
+reads_suffix= config["rev_index"]+reads_ext
+
+samples = [ r.split(reads_suffix)[0] for r in os.listdir(READS_dir) if r.endswith(reads_suffix)]
+
+
+#------------------
+rule all:
+  input: expand("PREFILT/03_MPILEUP/{dataset}/{prefix_mag}/{sample}_in_{prefix_mag}_mpq_{mapqual}_mpileup", dataset=dataset, prefix_mag = prefix_MAGs, mapqual = mapqual, sample=samples),
+         expand("PREFILT/02_MAPPING/{dataset}/{prefix_mag}/{sample}_{prefix_mag}_mpq_{mapqual}_sorted_position.bam.bai", dataset=dataset, prefix_mag = prefix_MAGs, mapqual = mapqual, sample=samples),
+         "PREFILT/Estimated_median_cov_per_sample.tsv",
+         "PREFILT/Selected_samples_MAGs.tmp"
+
+rule indexing:
+    input: expand("RAW_DATA/MAGs/{dataset}/{prefix_mag}{mags_ext}", dataset=dataset, prefix_mag = prefix_MAGs, mags_ext=mags_ext)
+    output: expand("01_INDEXING/{{dataset}}/{{prefix_mag}}/{{prefix_mag}}.{suffix1}.bt2", dataset=dataset, suffix1 = range(1,5), prefix_mag = prefix_MAGs),
+            expand("01_INDEXING/{{dataset}}/{{prefix_mag}}/{{prefix_mag}}.rev.{suffix}.bt2", dataset=dataset, suffix = range(1,3), prefix_mag = prefix_MAGs)  #According to bowtie2 manual (6 suffixes)
+    params: ref = "01_INDEXING/{dataset}/{prefix_mag}/{prefix_mag}",
+            input = "RAW_DATA/MAGs/{dataset}/{prefix_mag}"+config["mags_ext"]
+    threads: thrs
+    message: "indexing {params.input} sequence"
+    shell: "bowtie2-build {params.input} {params.ref} --threads {threads} -f -q"
+
+rule mapping:
+  input: expand("01_INDEXING/{dataset}/{prefix_mag}/{prefix_mag}.{suffix1}.bt2", dataset=dataset, suffix1 = range(1,5), prefix_mag = prefix_MAGs),
+         expand("01_INDEXING/{dataset}/{prefix_mag}/{prefix_mag}.rev.{suffix}.bt2", dataset=dataset, suffix = range(1,3), prefix_mag = prefix_MAGs),
+         fwd = expand("{tmpdir}/Reads/{sample}{fwdi}{reads_ext}", tmpdir=config["temp_sub_Reads_dir"], sample=samples, reads_ext = reads_ext, fwdi=config["fwd_index"]),
+         rev = expand("{tmpdir}/Reads/{sample}{revi}{reads_ext}", tmpdir=config["temp_sub_Reads_dir"], sample= samples, reads_ext =reads_ext, revi=config["rev_index"])
+  output: expand("PREFILT/02_MAPPING/{{dataset}}/{{prefix_mag}}/{{sample}}_{{prefix_mag}}_mpq_{mapqual}_sorted_position.bam", dataset=dataset, prefix_mag = prefix_MAGs, mapqual = mapqual, sample=samples)
+  params: index = "01_INDEXING/{dataset}/{prefix_mag}/{prefix_mag}",
+          mapqual = mapqual,
+          bowtie2 = config["bowtie2_params"],
+          groupfwd2 = config["temp_sub_Reads_dir"]+"/Reads/{sample}"+config["fwd_index"]+config["reads_ext"],
+          grouprev2 = config["temp_sub_Reads_dir"]+"/Reads/{sample}"+config["rev_index"]+config["reads_ext"],
+          view = sam_view_params
+  log: expand("PREFILT/02_MAPPING/log_bowtie2/{{dataset}}/{{prefix_mag}}/{{sample}}_{{prefix_mag}}_mpq_{mapqual}.log", dataset=dataset, prefix_mag = prefix_MAGs, mapqual = mapqual, sample=samples)
+  threads: thrs
+  message: "mapping reads to {params.index} \nfwd: {params.groupfwd2}\nrev: {params.grouprev2}\n mapping quality > {params.mapqual} \n and sorting mapping reads by position"
+  shell: """
+             bowtie2 {params.bowtie2} -p {threads} -x {params.index} -1 {params.groupfwd2} -2 {params.grouprev2} 2> {log} | samtools view {params.view} -q {params.mapqual} --threads {threads} | samtools sort -o {output} --threads {threads}
+         """
+
+rule indexing_reads_mapping:
+  input: expand("PREFILT/02_MAPPING/{dataset}/{prefix_mag}/{sample}_{prefix_mag}_mpq_{mapqual}_sorted_position.bam", dataset=dataset, prefix_mag = prefix_MAGs, mapqual = mapqual, sample=samples)
+  output: expand("PREFILT/02_MAPPING/{{dataset}}/{{prefix_mag}}/{{sample}}_{{prefix_mag}}_mpq_{{mapqual}}_sorted_position.bam.bai", dataset=dataset, prefix_mag = prefix_MAGs, mapqual = mapqual, sample=samples)
+  params: input="PREFILT/02_MAPPING/{dataset}/{prefix_mag}/{sample}_{prefix_mag}_mpq_{mapqual}_sorted_position.bam"
+  version:"1.9"
+  threads: config["threads"]
+  message: "indexing sorted reads mapping from {params.input}"
+  shell: "samtools index {params.input} -@ {threads}"
+
+rule mpileup_and_coverage:
+  input: expand("PREFILT/02_MAPPING/{dataset}/{prefix_mag}/{sample}_{prefix_mag}_mpq_{mapqual}_sorted_position.bam", dataset=dataset, prefix_mag = prefix_MAGs, mapqual = mapqual, sample=samples)
+  output: expand("PREFILT/03_MPILEUP/{{dataset}}/{{prefix_mag}}/{{sample}}_in_{{prefix_mag}}_mpq_{{mapqual}}_mpileup", dataset=dataset, prefix_mag = prefix_MAGs, mapqual = mapqual, sample=samples)
+  params: input="PREFILT/02_MAPPING/{dataset}/{prefix_mag}/{sample}_{prefix_mag}_mpq_{mapqual}_sorted_position.bam",
+          out="PREFILT/03_MPILEUP/{dataset}/{prefix_mag}/{sample}_in_{prefix_mag}_mpq_{mapqual}_mpileup",
+          minbasequal=int(config["min_bsq_for_cov_median_calculation"])
+  message: "Samtools mpileup {params.input} file"
+  shell: """
+          samtools mpileup -d 1000000 -Q {params.minbasequal} -a {params.input} > {params.out}
+         """
+
+rule selection:
+  input: expand("PREFILT/03_MPILEUP/{dataset}/{prefix_mag}/{sample}_in_{prefix_mag}_mpq_{mapqual}_mpileup", dataset=dataset, prefix_mag = prefix_MAGs, mapqual = mapqual, sample=samples)
+  output: all = "PREFILT/Estimated_median_cov_per_sample.tsv", sel = "PREFILT/Selected_samples_MAGs.tmp"
+  params:  mincov = int(config["min_coverage"]),
+           fraction = float(config["fraction"]),
+           dir = "PREFILT/03_MPILEUP/prefilt",
+           out = "PREFILT"
+  message: "Selecting Samples with higher median coverage then {params.mincov} per MAG"
+  shell: "python src/parse_subsample_median_cov.py -i {params.dir} -o {params.out} -f {params.fraction} -t {params.mincov}"
+
