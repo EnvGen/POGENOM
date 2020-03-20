@@ -36,7 +36,7 @@ fi
 positions=$(bowtie2-inspect -s $wkd/01_INDEXING/$direct/$mag/$mag | awk '{ FS = "\t" } ; BEGIN{L=0}; {L=L+$3}; END{print L}')
 
 mkdir -p Genome_sizes
-if [ -e Genome_sizes/$mag ]; then true; else echo "genome size:" $positions > Genome_sizes/$mag.size; fi
+echo "genome size:" $positions > Genome_sizes/$mag.size
 
 #---breadth
 non_zero=$(cut -f4 $mpileupfile | grep -cv "0")
