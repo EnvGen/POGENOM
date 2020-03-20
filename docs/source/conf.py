@@ -18,8 +18,8 @@
 # -- Project information -----------------------------------------------------
 
 project = 'POGENOM'
-copyright = '2020, Anders Andersson, Sjöqvist C, Luis F. Delgado'
-author = 'Anders Andersson, Luis F. Delgado, Sjöqvist C'
+copyright = '2020, Anders Andersson, Luis F. Delgado'
+author = 'Anders Andersson, Luis F. Delgado'
 
 # The full version, including alpha/beta/rc tags
 release = 'latest'
