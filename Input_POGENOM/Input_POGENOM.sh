@@ -54,7 +54,6 @@ if [[ "$workdir" != /* ]] || [ -z "$workdir" ]; then
     exit 0
 fi
 
-
 #----Using prefilt mode - full workflow
 mkdir -p $workdir/log_files
 if  [[ "$mode" == prefilt ]]; then
