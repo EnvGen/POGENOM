@@ -22,7 +22,7 @@ Contents
    :maxdepth: 4
    
    self
-   Usage_POGENOM
+   POGENOM_Usage
    Input_POGENOM
    LICENSE
 

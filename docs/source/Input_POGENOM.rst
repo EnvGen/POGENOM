@@ -9,6 +9,6 @@ This pipeline generates the required input file for POGENOM. The aim of this pip
 .. toctree::
    :maxdepth: 2
     
-   Installation
-   Usage
-   Output_description
+   Input_POGENOM_Installation
+   Input_POGENOM_Usage
+   Input_POGENOM_Output_description
