@@ -65,7 +65,7 @@ The Bowtie2 log files generated when mapping Reads subset, are stored in PREFILT
 VCF files
 ^^^^^^^^^
 
-Variant calling files per MAG are stored in the directory 06_VCF.
+Variant calling files per genome are stored in the directory 06_VCF.
 Example of filename::
 
     06_VCF/<dataset>/<genome_name>_mpq_<mapping_quality>.vcf
