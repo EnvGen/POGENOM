@@ -12,7 +12,7 @@ err_report() {
 trap 'err_report $LINENO' ERR
 
 #Default options
-configFile="here"
+configFile=$wd/config_files/Input_POGENOM_config.json
 
 #----Argument parse----------------------
 
@@ -37,9 +37,6 @@ case $a in
 esac
 done
 
-if [[ "$configFile" == here ]]; then configFile=$wd/config_files/Input_POGENOM_config.json; fi
-
-
 if [[ "$configFile" != /* ]] || [ -z "$configFile" ]; then
     echo "Please provide an absoltute path to configfile e.g., bash Input_POGENOM.sh '/absolute/path/to/configfile' "
     exit 0
@@ -50,9 +47,12 @@ cat $configFile | sed s/"[{|}]"//g | sed s/":"/"="/g | sed s/",$"//g | sed s/" =
 
 if [[ "$workdir" != /* ]] || [ -z "$workdir" ]; then
     echo "Please provide an absoltute path to the working directory in configfile e.g., 'workdir': '/absolute/path/to/working_directory/' "
+    echo "Please double-check the absolute path to working directory $workfir and to configfile $configFile"
     rm temporal
     exit 0
 fi
+
+echo "INFO: Starting Input_POGENOM pipeline - Working directory: $workdir"
 
 #----Using prefilt mode - full workflow
 mkdir -p $workdir/log_files
