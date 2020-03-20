@@ -12,7 +12,7 @@ or::
 If a GFF file is provided, gene-wise 𝜋 and gene-wise FST will also be calculated::
 
     perl pogenom.pl --vcf_file <VCF_FILE> --out <OUTPUT_FILES_PREFIX> --gff_file <GFF_FILE>
-    
+
 And if a genetic code file is provided (such as `standard_genetic_code.txt` in the POGENOM distribution), amino acid frequencies will be calculated for each codon position in each gene and sample, and gene-wise 𝜋 and FST will be calculated also at the amino acid level. Now also non-synonymous to synonymous polymorphism rates (pN/pS) will be calculated for each gene in each sample::
 
     perl pogenom.pl --vcf_file <VCF_FILE> --out <OUTPUT_FILES_PREFIX> --gff_file <GFF_FILE> --genetic_code_file <GENETIC_CODE_FILE>
