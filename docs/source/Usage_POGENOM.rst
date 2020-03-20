@@ -7,10 +7,6 @@ Minimum input (only genome-wide 𝜋 and FST will be calculated)::
 
 or::
 
-    perl pogenom.pl --vcf_file VCF_FILE --out OUTPUT_FILES_PREFIX --gff_file GFF_FILE
-
-or::
-
     perl pogenom.pl --vcf_file VCF_FILE --out OUTPUT_FILES_PREFIX --fasta_file FASTA_FILE
 
 If a GFF file is provided, gene-wise 𝜋 and gene-wise FST will also be calculated::
