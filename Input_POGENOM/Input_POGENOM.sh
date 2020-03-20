@@ -47,7 +47,7 @@ cat $configFile | sed s/"[{|}]"//g | sed s/":"/"="/g | sed s/",$"//g | sed s/" =
 
 if [[ "$workdir" != /* ]] || [ -z "$workdir" ]; then
     echo "Please provide an absoltute path to the working directory in configfile e.g., 'workdir': '/absolute/path/to/working_directory/' "
-    echo "Please double-check the absolute path to working directory $workfir and to configfile $configFile"
+    echo "Please double-check the absolute path to working directory $workdir and to configfile $configFile"
     rm temporal
     exit 0
 fi
