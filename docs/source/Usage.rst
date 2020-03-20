@@ -87,7 +87,7 @@ In the "Input_POGENOM_config.json" file, set the parameters to be used. It conta
 "temp_sub_Reads_dir": "PREFILT",
   Directory storing the subsampled reads when running the pipeline using "mode": "prefilt". The size of this directory will be    "fraction" * the size of "dataset".
 
- "remove_subreads": "no",
+"remove_subreads": "no",
   Remove the Reads subset directory (i.e., <temp_sub_Reads_dir>/Reads/) after usage. This Reads directory is created during sample prescreening, when "mode": "prefilt" is used.  
 
 "min_coverage": 10,

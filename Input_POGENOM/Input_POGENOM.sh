@@ -74,9 +74,9 @@ if  [[ "$mode" == prefilt ]]; then
              if [ "$file_empty" -eq 0 ]; then
                 echo -e "INFO: With the current parameter setting: Dataset $dataset - Fraction $fraction - Median coverage threshold $min_coverage - Min-base quality $min_bsq_for_cov_median_calculation - Mapping quality $mapqual\n      There is no Genome - sample with Estimated Median Coverage higher than threshold.\n      A vcf file cannot be created\n"
              else
-                cat PREFILT/$dataset/Selected_samples_Genomes.tmp | grep -v "#" | while read line
+                echo "INFO: Calculating Genome Median coverage and breadth - Dataset: $dataset - Median coverage threshold: $min_coverage - Breadth threshold: $min_breadth %"
+                grep -v "#" PREFILT/$dataset/Selected_samples_Genomes.tmp | while read line
                 do
-                  echo "INFO: Calculating Genome Median coverage and breadth - Dataset $dataset - Median coverage threshold $min_coverage - Breadth threshold $min_breadth %"
                   mag=$(echo $line | cut -d " " -f1)
                   samples=$(echo $line | cut -d " " -f2)
 
@@ -93,7 +93,7 @@ if  [[ "$mode" == prefilt ]]; then
              if [ "$no_genome" -ne 0 ]; then
                  echo "**********************************************"
                  echo "The following Genome(s) has(have) not been analysed"
-                 cat PREFILT/$dataset/Selected_samples_Genomes.tmp | grep "#" | while read line; do echo $line; done
+                 grep "#" PREFILT/$dataset/Selected_samples_Genomes.tmp
                  echo -e "**********************************************\n"
              fi
 
@@ -108,7 +108,7 @@ fi
 #---Option when analysing a dataset without prefilt
 
 cd $workdir
-    echo "INFO: Calculating Genome Median coverage and breadth - Dataset $dataset - Median coverage threshold $min_coverage - Breadth threshold $min_breadth %"
+    echo "INFO: Calculating Genome Median coverage and breadth - Dataset: $dataset - Median coverage threshold: $min_coverage - Breadth threshold: $min_breadth %"
 
 snakemake -s snakefiles/step1_pogenom_input step1_all -j $threads --quiet 2> log_files/$dataset"_Genomes_coverage_breadth.log"
 
