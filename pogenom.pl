@@ -6,54 +6,54 @@ pogenom.pl - Calculates population genomic parameters from a VCF file
 
 =head1 USAGE (minimum input)
 
-  perl pogenom.pl --vcf_file VCF_FILE --out OUTPUT_FILES_PREFIX --genome_size GENOME_SIZE
+  perl pogenom.pl --vcf_file <VCF_FILE> --out <OUTPUT_FILES_PREFIX> --genome_size <GENOME_SIZE>
 
 or:
  
-  perl pogenom.pl --vcf_file VCF_FILE --out OUTPUT_FILES_PREFIX --gff_file GFF_FILE
+  perl pogenom.pl --vcf_file <VCF_FILE> --out <OUTPUT_FILES_PREFIX> --gff_file <GFF_FILE>
  
 or:
 
-  perl pogenom.pl --vcf_file VCF_FILE --out OUTPUT_FILES_PREFIX --fasta_file FASTA_FILE
+  perl pogenom.pl --vcf_file <VCF_FILE> --out <OUTPUT_FILES_PREFIX> --fasta_file <FASTA_FILE>
 
 
 =head1 REQUIRED ARGUMENTS
 
-  --vcf_file VCF_FILE         Specify vcf file with data from a single or multiple samples
+  --vcf_file <VCF_FILE          Specify vcf file with data from a single or multiple samples
 
-  --out OUTPUT_FILES_PREFIX   Specify the prefix of the output file name(s) (overwrites existing files with same names)
+  --out <OUTPUT_FILES_PREFIX    Specify the prefix of the output file name(s) (overwrites existing files with same names)
 
-  --genome_size GENOME_SIZE   Specify genome size (in bp; integer). Not required if --gff_file or --fasta_file with genome sequence is given
+  --genome_size <GENOME_SIZE    Specify genome size (in bp; integer). Not required if --gff_file or --fasta_file with genome sequence is given
  
 
 
 =head1 OPIONAL ARGUMENTS
 
-  --gff_file GFF_FILE         Specify gff file. Either this, --genome_size or --fasta_file must be given
+  --gff_file <GFF_FILE>         Specify gff file. Either this, --genome_size or --fasta_file must be given
  
-  --fasta_file FASTA_FILE     Specify fasta file. Either this, --genome_size or --gff_file must be given
+  --fasta_file <FASTA_FILE>     Specify fasta file. Either this, --genome_size or --gff_file must be given
  
-  --genetic_code_file GENETIC_CODE_FILE   Specify genetic code file. E.g. standard_genetic_code.txt in the POGENOM distribution
+  --genetic_code_file <GENETIC_CODE_FILE>   Specify genetic code file. E.g. standard_genetic_code.txt in the POGENOM distribution
  
-  --loci_file LOCI_FILE       Specify file with ids of loci to be included
+  --loci_file <LOCI_FILE>       Specify file with ids of loci to be included
 
-  --sample_file SAMPLE_FILE   Specify file with ids of samples to be included
+  --sample_file <SAMPLE_FILE>   Specify file with ids of samples to be included
  
-  --min_count MIN_COUNT       Specify minimum coverage for a locus to be included for the sample
+  --min_count <MIN_COUNT>       Specify minimum coverage for a locus to be included for the sample
  
-  --min_found MIN_FOUND_IN    Specify minimum number of samples that a locus needs to be present in to be included
+  --min_found <MIN_FOUND_IN>    Specify minimum number of samples that a locus needs to be present in to be included
  
-  --subsample SUBSAMPLE       Specify coverage level at which to subsample
+  --subsample <SUBSAMPLE>       Specify coverage level at which to subsample
  
-  --keep_haplotypes           If this is used, POGENOM will not split haplotypes into single-nucleotide variants, which is otherwise the default
+  --keep_haplotypes             If used, POGENOM will not split haplotypes into single-nucleotide variants, which is otherwise the default
  
-  --vcf_format VCF_FORMAT     Specify VCF file format version. Can be set to freebayes (default) or GATK
+  --vcf_format <VCF_FORMAT>     Specify VCF file format version. Can be set to freebayes (default) or GATK
 
-  --fst_perm FST_PERM         Specify number of permutations (integer) for making randomised gene-wise Fst. Use with caution, output can be huge.
+  --fst_perm <FST_PERM>         Specify number of permutations (integer) for making randomised gene-wise Fst. Use with caution, output can be huge
 
-  --pi_only                   If this is used, POGENOM will only calculate and output genome-wide pi
+  --pi_only                     If used, POGENOM will only calculate and output genome-wide pi
  
-  --help                      Prints this help message
+  --help                        Prints this help message
 
 [Press q to close this help message]
 
