@@ -88,20 +88,20 @@ In the "Input_POGENOM_config.json" file, set the parameters to be used. It conta
   Directory storing the subsampled reads when running the pipeline using "mode": "prefilt". The size of this directory will be    "fraction" * the size of "dataset".
 
 "remove_subreads": "no",
-  Remove the Reads subset directory (i.e., <temp_sub_Reads_dir>/Reads/) after usage. This Reads directory is created during sample prescreening, when "mode": "prefilt" is used.  
+  Remove the directory of subsampled reads (i.e., <temp_sub_Reads_dir>/Reads/) after usage. This directory is created during sample prescreening, when "mode": "prefilt" is used.  
 
 "min_coverage": 10,
-  Minimum genome median coverage per sample per genome, integer. Samples below this threshold will not be included in the subsequent comparative analysis.
+  Minimum median coverage depth per sample per genome. Integer. Samples below this threshold will not be included in the subsequent comparative analysis.
   When "mode": "prefilt", and "fraction" : "0.10", a min_coverage value lower than 10 will select all samples, and the prescreening will be obsolete.
 
 "min_breadth": 40,
-  Minimum genome breadth per sample per genome. Integer.
+  Minimum coverage breadth (percentage of genome covered) per sample per genome. Integer.
 
 "min_bsq_for_cov_median_calculation": 15,
-  Minimum base quality when counting the number of bases per genome position during coverage calculation. Integer number.
+  Minimum base quality when counting the number of bases per genome position during coverage calculation. Integer.
 
 "threads": 15,
-  Number of threads.
+  Number of threads. Integer.
 
 "genomes_ext": ".fa",
   Extention used on your genome files.
