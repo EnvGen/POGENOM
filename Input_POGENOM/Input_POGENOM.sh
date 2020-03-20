@@ -117,4 +117,4 @@ snakemake -s snakefiles/step1_pogenom_input vcf -j $threads --quiet 2> log_files
 
     rm temporal
 
-echo 'INFO: Input_POGENOM pipeline is ready !!!'
+echo 'INFO: Input_POGENOM pipeline is done !!!'
