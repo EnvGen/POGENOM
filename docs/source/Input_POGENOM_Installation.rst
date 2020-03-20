@@ -49,7 +49,7 @@ This directory contains:
 2. Config_file, snakefiles and src directories
 3. The Input_POGENOM.sh script.
 
-Create the virtual environment using the command::
+Create the virtual environment (with name ip_env) using the command::
 
     conda env create -f config_files/Input_POGENOM_conda_env_setup.yaml
 
