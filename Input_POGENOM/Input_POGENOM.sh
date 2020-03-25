@@ -82,7 +82,7 @@ for p in "${options2[@]}"; do if [ -z "$p" ]; then echo 'A key parameter in "mod
               rm -rf $temp_sub_Reads_dir/Reads/
          fi
          result_dir="PREFILT/"$dataset"/params_cov_"$min_coverage"_mpq_"$mapqual"_bq_"$min_bsq_for_cov_median_calculation"_fr_"$fraction
-        # if [ -s $result_dir/Selected_samples_Genomes.txt ]; then
+      
              file_empty=$(grep -v "#" $result_dir/Selected_samples_Genomes.txt | wc -l)
              if [ "$file_empty" -eq 0 ]; then
                 echo -e "INFO: With the current parameter setting: Dataset $dataset - Fraction $fraction - Median coverage threshold $min_coverage - Min-base quality $min_bsq_for_cov_median_calculation - Mapping quality $mapqual\n      There is no Genome - sample with Estimated Median Coverage higher than threshold.\n      A vcf file cannot be created\n"
@@ -105,9 +105,9 @@ for p in "${options2[@]}"; do if [ -z "$p" ]; then echo 'A key parameter in "mod
                  echo -e "**********************************************\n"
              fi
          echo "INFO: Input_POGENOM pipeline is done !!!"
-#         else
-#           echo -e "ERROR: file $result_dir/Selected_samples_Genomes.txt was not created\nTIP 1 - Look at $wd/log_files/samples_filter_$dataset.log\nTIP 2 - Check if the 'ip_env' has been activated - command:\n    'conda activate ip_env' "
-#         fi
+
+
+
 rm temporal
 exit 0
 fi
