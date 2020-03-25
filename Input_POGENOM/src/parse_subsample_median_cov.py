@@ -19,16 +19,16 @@ args = parser.parse_args()
 
 MAG_list = [ os.path.basename(d.path) for d in os.scandir(args.inf) if d.is_dir() ]
 
-with open(os.path.join(args.out,"Estimated_median_cov_per_sample.tsv"), "w") as fout1, open(os.path.join(args.out,"Selected_samples_Genomes.tmp"), "w") as fout2:
+with open(os.path.join(args.out,"Estimated_median_cov_per_sample.tsv"), "w") as fout1, open(os.path.join(args.out,"Selected_samples_Genomes.txt"), "w") as fout2:
     print("#Genome", "Sample", "Estimated_median_cov",sep="\t", file=fout1)
-    print("Selected Genomes, and samples")
+    print("***** Selected Genomes and samples *****")
     for m in MAG_list:
         selected_sample_list = []
-        path1=os.path.join(args.inf,m)
+        path1=os.path.join(args.inf, m)
         file_list = [ f for f in os.listdir(path1) if f.endswith("mpileup")]
         for file in file_list:
             sample = file.split("_in_")[0]
-            with open(os.path.join(args.inf,m,file), "r") as fin:
+            with open(os.path.join(args.inf, m, file), "r") as fin:
                 value = []
                 for line in fin:
                     line = line.rstrip()
@@ -40,7 +40,7 @@ with open(os.path.join(args.out,"Estimated_median_cov_per_sample.tsv"), "w") as 
                     selected_sample_list.append(sample)
 
         if len(selected_sample_list) != 0:
-           print("Genome: {} SAMPLE(S): {}".format(m," ".join(map(str,selected_sample_list))))
+           print("      Genome: {} SAMPLE(S): {}".format(m," ".join(map(str,selected_sample_list))))
            print(m,",".join(map(str,selected_sample_list)),sep="\t", file=fout2)
         else:
             print("#{} has not sample with Estimated Median coverage higher then threshold".format(m), file=fout2)

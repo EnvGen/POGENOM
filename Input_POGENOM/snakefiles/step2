@@ -1,0 +1,70 @@
+import os
+
+#workflow for input file - POGENOM - step 2 - several BAM files -prefilt
+
+#-----DATA ---names-----------------------------------------------------------
+configfile: "./config_files/Input_POGENOM_config.json"
+workdir: config["workdir"]
+mapqual = config["mapqual"]
+thrs = config["threads"]
+mags_ext = config["genomes_ext"]
+prefix_MAGs = config["mag_name"]
+min_coverage = config["min_coverage"]
+min_breadth = config["min_breadth"]
+bq = config["min_bsq_for_cov_median_calculation"]
+params_dir = "_".join(["params","cov", str(min_coverage), "bdth", str(min_breadth), "mpq", str(mapqual), "bq", str(bq)])
+
+if config["mode"] == "prefilt" :
+    dataset=config["dataset"]+"_prefilt"
+else:
+    dataset=config["dataset"]
+
+#---per sample---------------------
+
+def files_mergeables_per_mag(dataset, params_dir):
+    mag=config["mag_name"]
+    MAGs_dir = os.path.join(config["workdir"], "04_mergeable", dataset, params_dir, mag)
+    bam_files = [b for b in os.listdir(MAGs_dir) if b.endswith(".bam")] # list of bam files
+    mergable_files = []
+
+    if len(bam_files) > 1:
+        for bam in bam_files:
+           mergable_files.append(os.path.join("04_mergeable", dataset, params_dir, mag, bam))
+        return mergable_files
+
+#------------------
+rule all:
+  input: expand("05_BAM_merged/{dataset}/{params_dir}/{prefix_mag}_merged_sorted_position.bam",  dataset = dataset, prefix_mag = prefix_MAGs, params_dir = params_dir),
+         expand("06_VCF/{dataset}/{params_dir}/{prefix_mag}.vcf", dataset = dataset, prefix_mag = prefix_MAGs, params_dir = params_dir)
+
+rule merge_bam_files:
+      input: files_mergeables_per_mag(dataset, params_dir)
+      output: merg=expand("05_BAM_merged/{{dataset}}/{{params_dir}}/{{prefix_mag}}_merged_sorted_position.bam",  dataset = dataset, prefix_mag = prefix_MAGs, params_dir = params_dir),
+              tmp=temp(expand("05_BAM_merged/{{dataset}}/{{params_dir}}/{{prefix_mag}}_bam_merged", dataset = dataset, prefix_mag = prefix_MAGs, params_dir = params_dir))
+      params: out="05_BAM_merged/{dataset}/"+params_dir+"/{prefix_mag}_merged_sorted_position.bam",
+              tmp="05_BAM_merged/{dataset}/"+params_dir+"/{prefix_mag}_bam_merged",
+              inbam = " ".join(files_mergeables_per_mag(dataset, params_dir))
+      threads: thrs
+      message: "merging {params.inbam}"
+      shell: """
+                samtools merge {params.tmp} {params.inbam} --threads {threads}
+                samtools sort -o {params.out} {params.tmp} --threads {threads}
+             """
+
+rule freebayes:
+     input: mag=expand("RAW_DATA/Genomes/{data}/{prefix_mag}.fa", data = config["dataset"], prefix_mag = prefix_MAGs),
+           bam=expand("05_BAM_merged/{dataset}/{params_dir}/{prefix_mag}_merged_sorted_position.bam",  dataset = dataset, prefix_mag = prefix_MAGs, params_dir = params_dir)
+     output: expand("06_VCF/{{dataset}}/{{params_dir}}/{{prefix_mag}}.vcf", dataset = dataset, prefix_mag = prefix_MAGs, params_dir = params_dir)
+     threads: thrs
+     params: pr=config["freebayes_parameters"],
+             mag="RAW_DATA/Genomes/"+config["dataset"]+"/{prefix_mag}.fa",
+             bam="05_BAM_merged/{dataset}/"+params_dir+"/{prefix_mag}_merged_sorted_position.bam",
+             out="06_VCF/{dataset}/"+params_dir+"/{prefix_mag}.vcf",
+             log="06_VCF/{dataset}/"+params_dir+"/{prefix_mag}_samples.txt",
+             qual=config["vcffilter_qual"]
+     message: "Generating vcf file on {params.mag} using parameters {params.pr} and vcffilter {params.qual}"
+     shell: """
+                samtools index {params.bam} -@ {threads}
+                freebayes -f {params.mag} {params.bam} {params.pr} | vcffilter -f {params.qual} > {params.out}
+                vcfsamplenames {params.out} > {params.log}
+            """
