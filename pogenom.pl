@@ -180,7 +180,9 @@ if ($genetic_code_file) {
 }
 print"\n### Calculating Nucleotide Diversity (pi) ###\n";
 &calc_pi;
-&estimate_genome_coverage;
+if (@samples > 1) {
+    &estimate_genome_coverage;
+}
 if ($gff_file and !$pi_only) {
     print"\n### Calculating Gene-wise Nucleotide Diversity (pi) ###\n";
     &calc_per_gene_pi;
@@ -1530,7 +1532,6 @@ sub print_output_to_file {
             #print "#$sample $sample_estcov{$sample} $sample_pi{$sample} $sample_norm_pi $num_loci{$sample} $est_num_loci\n";
         } else {
             print OUT "$sample\t$sample_pi{$sample}\tNA\tNA\t$num_loci{$sample}\t$sample_totalleles{$sample}\t$sample_avcount{$sample}\n";
-            #print "#$sample NA $sample_pi{$sample} NA $num_loci{$sample} $est_num_loci\n";
         }
     }
     close(OUT);
