@@ -26,10 +26,12 @@ for r in "${Rds[@]}"
    do
       read_file=$(basename $r)
        if ! test -s $wd/$dataset/Reads/fraction_$fract/$read_file  #If file doesn't exit or if it exist but it is empty
-          then seqtk sample -s100 $r $fract > $wd/$dataset/Reads/fraction_$fract/$read_file
-               lines_in=$(cat $wd/$dataset/Reads/fraction_$fract/$read_file | wc -l)
+          then 
+               seqtk sample -s100 $r $fract > $wd/$dataset/Reads/fraction_$fract/temponame
+               lines_in=$(cat $wd/$dataset/Reads/fraction_$fract/temponame | wc -l)
   	           number_reads=$( echo $lines_in/4 | bc )
-               gzip -q $wd/$dataset/Reads/fraction_$fract/$read_file
+               gzip -c $wd/$dataset/Reads/fraction_$fract/temponame > $wd/$dataset/Reads/fraction_$fract/$read_file
+               rm $wd/$dataset/Reads/fraction_$fract/temponame
                echo "      Subset $read_file created - Number of reads in subset: $number_reads"
        else
             echo "      Subset $read_file already created"
