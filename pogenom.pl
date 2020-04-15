@@ -757,6 +757,12 @@ sub subsample_allele_counts_dupl {
 }
 
 sub estimate_genome_coverage {
+    foreach $sample (@samples) {
+        @loci = (keys %{$sample_locus_allel_counts{$sample}});
+        if (@loci == 0) {
+            return; # since estimating genome coverage does not work if any of the samples has 0 loci
+        }
+    }
     local($shared);
     $est_num_loci = 0;
     foreach $sample (@samples) {
@@ -834,9 +840,15 @@ sub calc_pi {
             $sample_locus_pi{$sample}{$locus} = $locus_intra_pi;
             $intra_pi = $intra_pi + $locus_intra_pi;
         }
-        $intra_pi = $intra_pi/$genome_size;
+        if (@loci > 0) {
+            $intra_pi = $intra_pi/$genome_size;
+            $av_count = $av_count/@loci;
+        } else {
+            $av_count = "NA";
+            $intra_pi = "NA";
+            $tot_alleles = "NA";
+        }
         $sample_pi{$sample} = $intra_pi;
-        $av_count = $av_count/@loci;
         $sample_avcount{$sample} = $av_count;
         $sample_totalleles{$sample} = $tot_alleles;
         $num_loci{$sample} = @loci;
