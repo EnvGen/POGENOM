@@ -8,30 +8,37 @@ workdir: config["workdir"]
 mapqual = config["mapqual"]
 thrs = config["threads"]
 mags_ext = config["genomes_ext"]
-dataset=config["dataset"]+"_prefilt"
 prefix_MAGs = config["mag_name"]
+min_coverage = config["min_coverage"]
+min_breadth = config["min_breadth"]
+bq = config["min_bsq_for_cov_median_calculation"]
+params_dir = "_".join(["params","cov", str(min_coverage), "bdth", str(min_breadth), "mpq", str(mapqual), "bq", str(bq)])
+
+if config["mode"] == "prefilt" :
+    dataset=config["dataset"]+"_prefilt"
+else:
+    dataset=config["dataset"]
 
 #---per sample---------------------
 
-def files_mergeables_per_mag(dataset):
+def files_mergeables_per_mag(dataset, params_dir):
     mag=config["mag_name"]
-    MAGs_dir = os.path.join(config["workdir"], "04_mergeable", dataset, mag)
+    MAGs_dir = os.path.join(config["workdir"], "04_mergeable", dataset, params_dir, mag)
     mergable_files = []
     bam_files = [b for b in os.listdir(MAGs_dir) if b.endswith(".bam")] # list of bam files
     if len(bam_files) == 1:
-         mergable_files.append("04_mergeable/"+config["dataset"]+"_prefilt/"+mag+"/"+bam_files[0])
+         mergable_files.append(os.path.join("04_mergeable", dataset, params_dir, mag, bam_files[0]))
          return mergable_files
 
 #------------------
 
 rule freebayes:
-     input: mag=expand("RAW_DATA/Genomes/{data}/{prefix_mag}.fa", data=config["dataset"], prefix_mag = prefix_MAGs),
-           bam=files_mergeables_per_mag(dataset)
-     output: out1=expand("06_VCF/{dataset}/{prefix_mag}_mpq_{mapqual}.vcf", dataset=dataset, prefix_mag = prefix_MAGs, mapqual = mapqual)
+     input: mag=expand("RAW_DATA/Genomes/{data}/{prefix_mag}.fa", data = config["dataset"], prefix_mag = prefix_MAGs),
+           bam=files_mergeables_per_mag(dataset, params_dir)
+     output: out1=expand("06_VCF/{dataset}/{params_dir}/{prefix_mag}.vcf", dataset = dataset, prefix_mag = prefix_MAGs, params_dir = params_dir)
      threads: thrs
      params: pr=config["freebayes_parameters"], qual=config["vcffilter_qual"],
-             log="06_VCF/"+dataset+"/"+prefix_MAGs+"_samples.txt"
-     version: "v1.3.1-dirty"
+             log="06_VCF/"+dataset+"/"+params_dir+"/"+prefix_MAGs+"_samples.txt"
      message: "Generating vcf file on {input.mag} using parameters {params.pr} vcffilter {params.qual}"
      shell: """
                 samtools index {input.bam} -@ {threads}

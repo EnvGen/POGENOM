@@ -2,11 +2,11 @@ Usage
 =====
 
 Organise your data
-^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^
 
 The pipeline is capable of analysing several datasets with samples (paired fastq read files) and several genomes (fasta files). The minimum data required is one dataset with one pair of read files (forward and reverse) and one genome.
 
-Input data (reads and genomes) must be stored in the directory RAW_DATA/, as explained below:
+Input data (reads and genomes) must be stored in the directory ``RAW_DATA/``, as explained below:
 
 1. READS
 
@@ -74,34 +74,38 @@ In the "Input_POGENOM_config.json" file, set the parameters to be used. It conta
 
 "dataset": "name of the dataset to be analysed",
   It cannot be empty.
-  
-"mode": "prefilt", 
-  When "mode": "prefilt", the pipeline will do a quick prescreening by mapping a subset of the reads from each sample, to estimate the     coverage of the samples and determine which should be included. 
-  If no prescreening (prefilt) is required, then set an empty string ("mode": "",). 
-  
+
+"mode": "prefilt",
+  When "mode": "prefilt", the pipeline will do a quick prescreening by mapping a subset of the reads from each sample, to estimate the     coverage of the samples and determine which should be included.
+  If no prescreening (prefilt) is required, then set an empty string ("mode": "",).
+
 "fraction": "0.15",
   Fraction of reads to be subsampled when running the pipeline using "mode": "prefilt".
   Lowering the fraction increases the uncertaintly in the coverage estimates.
-  Increasing the fraction increases the size of the directory <temp_sub_Reads_dir>/Reads/ and the runtime.
+  Increasing the fraction increases the size of the directory ``<temp_sub_Reads_dir>/Reads/`` and the runtime.
+  Required is mode "prefilt" used.
 
 "temp_sub_Reads_dir": "PREFILT",
   Directory storing the subsampled reads when running the pipeline using "mode": "prefilt". The size of this directory will be    "fraction" * the size of "dataset".
+  Required is mode "prefilt" used.
 
 "remove_subreads": "no",
-  Remove the directory of subsampled reads (i.e., <temp_sub_Reads_dir>/Reads/) after usage. This directory is created during sample prescreening, when "mode": "prefilt" is used.  
+  Remove the directory of subsampled reads (i.e., ``<temp_sub_Reads_dir>/Reads/``) after usage. This directory is created during sample prescreening, when "mode": "prefilt" is used.
 
 "min_coverage": 10,
   Minimum median coverage depth per sample per genome. Integer. Samples below this threshold will not be included in the subsequent comparative analysis.
-  When "mode": "prefilt", and "fraction" : "0.10", a min_coverage value lower than 10 will select all samples, and the prescreening will be obsolete.
+  When "mode": "prefilt", and "fraction" : "0.10", a "min_coverage" value lower than 10 will select all samples, and the prescreening will be obsolete.
+  It cannot be empty.
 
 "min_breadth": 40,
   Minimum coverage breadth (percentage of genome covered) per sample per genome. Integer.
+  It cannot be empty.
 
 "min_bsq_for_cov_median_calculation": 15,
-  Minimum base quality when counting the number of bases per genome position during coverage calculation. Integer.
+  Minimum base quality when counting the number of bases per genome position during coverage calculation. Integer. It cannot be empty.
 
 "threads": 15,
-  Number of threads. Integer.
+  Number of threads. Integer. It cannot be empty.
 
 "genomes_ext": ".fa",
   Extention used on your genome files.
@@ -121,7 +125,7 @@ In the "Input_POGENOM_config.json" file, set the parameters to be used. It conta
   For more information visit http://bowtie-bio.sourceforge.net/bowtie2/manual.shtml
 
 "mapqual": 20,
-  Read mapping quality threshold in BAM files. Integer. Parameter used in samtools view -q {}.
+  Read mapping quality threshold in BAM files. Integer. Parameter used in samtools view -q {}. It cannot be empty.
 
 "samtools_view_alignment_extra_filters": "-f 2 -F 1024",
   Filters used for selecting mapped reads to be included in the BAM file.
@@ -131,12 +135,15 @@ In the "Input_POGENOM_config.json" file, set the parameters to be used. It conta
 "freebayes_parameters": "-C 4 -p 1 --pooled-continuous --read-max-mismatch-fraction 0.05 --min-alternate-fraction 0.01 -q 15",
   Parameters used during variant calling.
   By default, freebayes exclude duplicates marked as such in alignments.
-  If you want to include use tag --use-duplicate-reads and remove "-F 1024" in "samtools_view_alignment_extra_filters".
-  The flag '-q --min-base-quality Q', exclude alleles from analysis if their supporting base quality is less than Q.
+  If you want to include duplicates, use the tag ``--use-duplicate-reads`` and remove "-F 1024" in "samtools_view_alignment_extra_filters".
+  The flag ``-q --min-base-quality Q``, exclude alleles from analysis if their supporting base quality is less than Q.
 
 "vcffilter_qual": "'QUAL > 20'"
-  Filtering variant calling.
+  Filtering variant calling. It cannot be empty.
   Here it removes any sites with an estimated probability of not being polymorphic less than Phred 20 (corresponding to 99% probability of being a real SNP).
+
+"snakemake_extra_params": "<command line 1>, <command line 2>"
+  Snakemake extra command line options (comma-separated) to be used. If you don't want to use any extra command line, set an empty string, "snakemake_extra_params": "".
 
 
 To access and modify this file, you can use the following command::
