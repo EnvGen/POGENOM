@@ -681,7 +681,7 @@ sub get_snp_data_combined_vcf_split_haplotypes {
     $cumulative_found = $found[$i];
     print"Number of loci found $i times: $cumulative_found\n";
     for ($i = (@found - 2); $i > 0; $i--) {
-        $cumulative_found = $cumulative_found + $found[$i];
+        $cumulative_found = $cumulative_found + $found[$i] if (defined $found[$i]);
         print"Number of loci found >= $i times: $cumulative_found\n";
     }
     if ((keys %sample_locus_allel_counts) == 0) {
