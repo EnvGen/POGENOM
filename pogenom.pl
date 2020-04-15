@@ -373,7 +373,7 @@ sub read_fasta {
     if (defined $gff_file) {
         foreach $contig (@contigs) {
             if (!defined $contig_seq{$contig}) {
-                print"\nError: Missmatch between contig id in gff and fasta file\n\n"; exit;
+                print"\nError: Missmatch between contig id in gff ($contig) and fasta file\n\n"; exit;
             }
             @genes = @{ $contig_genes{$contig} };
             foreach $gene (@genes) {
@@ -1063,11 +1063,11 @@ sub calc_fst {
             $sample2_pi = $sample2_pi/$genome_size;
             if ($inter_pi > 0) {
                 #$fst = 1 - 0.5*($sample_pi{$sample1} + $sample_pi{$sample2})/$inter_pi; # intra pi values based on all loci
-                $fst = 1 - 0.5*($sample1_pi + $sample2_pi)/$inter_pi # intra pi values only based on shared loci
+                $fst = 1 - 0.5*($sample1_pi + $sample2_pi)/$inter_pi; # intra pi values only based on shared loci
+                $fst = sprintf("%.4f", $fst);
             } else {
                 $fst = "NA";
             }
-            $fst = sprintf("%.4f", $fst);
             $sample_sample_fst{$sample1}{$sample2} = $fst;
             $sample_sample_fst{$sample2}{$sample1} = $fst;
             print"$sample1\t$sample2\t$sample_pi{$sample1}\t$sample_pi{$sample2}\t$inter_pi\t$fst\n";
