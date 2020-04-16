@@ -247,7 +247,7 @@ sub read_gff {
     open (INFILE, "$gff_file") || die ("Error: can't open $gff_file");
     print"Reading $gff_file\n";
     while (<INFILE>) {
-        chomp;
+        $_ =~ s/\R//g;
         $row = $_;
         if ($fasta_started == 1) {
             if (substr($row, 0, 1) eq ">") {
@@ -256,6 +256,7 @@ sub read_gff {
                 }
                 $contig = $row;
                 substr($contig, 0, 1) = "";
+                #die;
                 $seq = "";
             } else {
                 $seq = $seq.$_;
@@ -304,6 +305,9 @@ sub read_gff {
     if ($fasta_started == 1) {
         $temp_genome_size = 0;
         foreach $contig (@contigs) {
+            if (!defined $contig_seq{$contig}) {
+                print"\nError: Missmatch between contig id ($contig) in upper and lower part of gff file\n\n"; exit;
+            }
             $temp_genome_size = $temp_genome_size + length($contig_seq{$contig});
             @genes = @{ $contig_genes{$contig} };
             foreach $gene (@genes) {
@@ -335,6 +339,7 @@ sub read_gff {
         if ($fasta_started == 1) {
             $genome_size = $temp_genome_size;
             print"Genome size calculated from GFF to $genome_size bp\n";
+            $logtext = $logtext."Genome size calculated from GFF to $genome_size bp\n";
         } else {
             print"Error: Genome size could not be calculated from GFF file\n\n"; exit;
         }
@@ -347,7 +352,7 @@ sub read_fasta {
     open (INFILE, "$fasta_file") || die ("Error: can't open $fasta_file");
     print"Reading $fasta_file\n";
     while (<INFILE>) {
-        chomp;
+        $_ =~ s/\R//g;
         $row = $_;
         if (substr($row, 0, 1) eq ">") {
             if ($seq ne "") {
@@ -370,6 +375,7 @@ sub read_fasta {
         }
     }
     print"Genome size calculated from fasta file to $genome_size bp\n";
+    $logtext = $logtext."Genome size calculated from fasta file to $genome_size bp\n";
     if (defined $gff_file) {
         foreach $contig (@contigs) {
             if (!defined $contig_seq{$contig}) {
@@ -393,7 +399,7 @@ sub read_genetic_code {
     open(INFILE, "$genetic_code_file") || die ("Error: can't open $genetic_code_file");
     print"Reading $genetic_code_file\n";
     while (<INFILE>) {
-        chomp;
+        $_ =~ s/\R//g;
         @fields = split(/\t/);
         $codon_aminoacid{$fields[0]} = $fields[1];
     }
@@ -408,7 +414,6 @@ sub get_snp_data_combined_vcf {
     open (INFILE, "$vcf_file") || die ("Error: can't open $vcf_file");
     print"Reading $vcf_file\n";
     while (<INFILE>) {
-        #chomp;
         $_ =~ s/\R//g;
         $row = $_;
         @fields = split(/\t/, $row);
@@ -550,7 +555,6 @@ sub get_snp_data_combined_vcf_split_haplotypes {
     print"Reading $vcf_file\n";
     print"Haplotypes will be split into individual bases\n";
     while (<INFILE>) {
-        #chomp;
         $_ =~ s/\R//g;
         $row = $_;
         @fields = split(/\t/, $row);
@@ -1025,7 +1029,6 @@ sub calc_aminoacid_frequencies {
         }
     }
 }
-
 
 sub calc_fst {
     print "Sample1\tSample2\tpi_1\tpi_2\tpi_1-2\tfst\n";
