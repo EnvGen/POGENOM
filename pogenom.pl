@@ -53,6 +53,8 @@ or:
 
   --pi_only                     If used, POGENOM will only calculate and output genome-wide pi
  
+  --split_fasta_header          If used, if a fasta file header includes space character(s), POGENOM will only use the part preceeding the first space
+ 
   --help                        Prints this help message
 
 [Press q to close this help message]
@@ -75,6 +77,7 @@ $outprefix = undef;
 $reference = undef;
 $keep_haplotypes = undef;
 $pi_only = undef;
+$split_fasta_header = undef;
 $use_pseudocounts = undef;
 $subsample = undef;
 $vcf_format = "freebayes";
@@ -82,7 +85,7 @@ $na_if_missing_loci = 1;
 $n_fst_permutations = undef;
 
 
-&GetOptions('vcf_file=s' => \$vcf_file, 'vcf_format=s' => \$vcf_format, 'gff_file=s' => \$gff_file, 'fasta_file=s' => \$fasta_file, 'genetic_code_file=s' => \$genetic_code_file, 'output=s' => \$outprefix, 'min_count=i' => \$min_count, 'min_found=i' => \$min_found_in, 'ref=s' => \$reference, 'genome_size=i' => \$genome_size, 'keep_haplotypes!' => \$keep_haplotypes, 'loci_file=s' => \$loci_file, 'sample_file=s' => \$sample_file, 'subsample=s' => \$subsample, 'use_pseudocounts' => \$use_pseudocounts, 'fst_perm=i' => \$n_fst_permutations, 'pi_only!' => \$pi_only, 'h!' => \$help);
+&GetOptions('vcf_file=s' => \$vcf_file, 'vcf_format=s' => \$vcf_format, 'gff_file=s' => \$gff_file, 'fasta_file=s' => \$fasta_file, 'genetic_code_file=s' => \$genetic_code_file, 'output=s' => \$outprefix, 'min_count=i' => \$min_count, 'min_found=i' => \$min_found_in, 'ref=s' => \$reference, 'genome_size=i' => \$genome_size, 'keep_haplotypes!' => \$keep_haplotypes, 'loci_file=s' => \$loci_file, 'sample_file=s' => \$sample_file, 'subsample=s' => \$subsample, 'use_pseudocounts' => \$use_pseudocounts, 'fst_perm=i' => \$n_fst_permutations, 'pi_only!' => \$pi_only, 'split_fasta_header!' => \$split_fasta_header, 'h!' => \$help);
 
 if (!$outprefix) {
     system ('perldoc', $0);
@@ -208,6 +211,8 @@ if ((@samples > 1) and !$pi_only) {
         if ($genetic_code_file) {
             print"\n### Calculating Gene-wise Aminoacid Fixation Index (aa-FST) ###\n";
             &calc_per_gene_aminoacid_fst;
+            #print"\n### Calculating Gene-wise Neutrality Index (NI) ###\n";
+            #&calc_NI;
         }
     }
 }
@@ -359,8 +364,10 @@ sub read_fasta {
                 $contig_seq{$contig} = $seq;
             }
             $contig = $row;
-            #@subfields = split(/\s+/, $row);
-            #$contig = $subfields[0];
+            if ($split_fasta_header) {
+                @subfields = split(/\s+/, $row);
+                $contig = $subfields[0];
+            }
             substr($contig, 0, 1) = "";
             $seq = "";
         } else {
@@ -610,6 +617,15 @@ sub get_snp_data_combined_vcf_split_haplotypes {
             if ($loci_file) {
                 next if (!defined $include_locus{$locus});
             }
+            $variant = 0;
+            for ($j = 0; $j < @alleles; $j++) {
+                #print"$i $j $alleles[$j] $ref\n";
+                if (substr($alleles[$j], $i, 1) ne substr($ref, $i, 1)) {
+                    $variant = 1;
+                }
+            }
+            #print"variant: $variant\n\n";
+            next if ($variant == 0); # for excluding invariant loci (common within haplotypes)
             $locus_found{$locus} = 0;
             for ($j = 9; $j < @fields; $j++) {
                 $sample = $samples[$j - 9];
@@ -1350,8 +1366,7 @@ sub calc_pN_pS {
                 # $pNpS = ($PN/$TN) / ($PS/$TS) # NA if $PS = 0;
                 # pN equals the fraction of polymorphic nonsynonymous sites, pS equals the fraction of polymorphic synonymous sites
                 $contig = $gene_contig{$gene};
-                $contig_seq = $contig_seq{$contig};
-                $gene_seq = substr($contig_seq, ($gene_start{$gene} - 1), $gene_length{$gene});
+                $gene_seq = $gene_seq{$gene};
                 # Gene on "+" strand
                 if ($gene_strand{$gene} eq "+") {
                     #print"\n$contig $gene $sample\n$gene_seq\n";
@@ -1368,11 +1383,7 @@ sub calc_pN_pS {
                                 @alleles = (keys %{$sample_locus_allel_counts{$sample}{$locus}});
                                 #print"Alleles: @alleles\n";
                                 #print"Base: $base\n";
-                                if (defined $sample_locus_allel_counts{$sample}{$locus}{$base}) {
-                                    $base_counts = $sample_locus_allel_counts{$sample}{$locus}{$base};
-                                } else {
-                                    $base_counts = 0;
-                                }
+                                $base_counts = $sample_locus_allel_counts{$sample}{$locus}{$base};
                                 for ($k = 0; $k < @alleles; $k++) {
                                     if (length($alleles[$k]) != 1) {
                                         print "\nError: Variant > 1 bp. Violates pN/pS calculation. Consider not running in --keep_haplotypes mode.\n\n"; die;
@@ -1383,7 +1394,6 @@ sub calc_pN_pS {
                                     }
                                 }
                                 substr($codon, $j, 1) = $base;
-                                #print"codon after: $codon aa after: $codon_aminoacid{$codon}\n";
                             }
                         }
                         next if ($codon_aminoacid{$codon} eq "*"); # CHECK!!!
@@ -1506,6 +1516,237 @@ sub calc_pN_pS {
         }
     }
 }
+
+sub calc_NI { # calculates Neutrality Index (NI)
+    # 1. spara positioner med PN och PS för varje prov
+    # 2. för varje par av prov, använd bara positioner där båda prov har data, räkna ut DN och DS för dessa, räkna ut PN och PS för varje prov baserat på 1.
+    foreach $contig (@contigs) {
+        #$contig = "P1994_127_bin61_k141_448048";
+        @genes = @{ $contig_genes{$contig} };
+        foreach $gene (@genes) {
+            #print"$gene\n";
+            $contig = $gene_contig{$gene};
+            $gene_seq = $gene_seq{$gene};
+            %sample_codonix_codon = ();
+            # record synonomous and non-synonomous polymorhisms iin every sample
+            foreach $sample (@samples) {
+                # Gene on "+" strand
+                if ($gene_strand{$gene} eq "+") {
+                    for ($i = 3; $i < $gene_length{$gene}; $i = $i + 3) { # skipping the start codon
+                        $codon = substr($gene_seq, $i, 3);
+                        # modify codon to represent majority sequence
+                        for ($j = 0; $j < 3; $j++) {
+                            $pos = $gene_start{$gene} + $i + $j;
+                            $locus = $contig."|".$pos;
+                            $base = substr($gene_seq, $i + $j, 1);
+                            if (defined $sample_locus_totcount{$sample}{$locus}) {
+                                @alleles = (keys %{$sample_locus_allel_counts{$sample}{$locus}});
+                                if (defined $sample_locus_allel_counts{$sample}{$locus}{$base}) {
+                                    $base_counts = $sample_locus_allel_counts{$sample}{$locus}{$base};
+                                } else {
+                                    $base_counts = 0;
+                                }
+                                for ($k = 0; $k < @alleles; $k++) {
+                                    if (length($alleles[$k]) != 1) {
+                                        print "\nError: Variant > 1 bp. Violates pN/pS calculation. Consider not running in --keep_haplotypes mode.\n\n"; die;
+                                    }
+                                    if ($sample_locus_allel_counts{$sample}{$locus}{$alleles[$k]} > $base_counts) {
+                                        $base_counts = $sample_locus_allel_counts{$sample}{$locus}{$alleles[$k]};
+                                        $base = $alleles[$k];
+                                    }
+                                }
+                                substr($codon, $j, 1) = $base;
+                            }
+                        }
+                        $sample_codonix_codon{$sample}{$i} = $codon;
+                        next if ($codon_aminoacid{$codon} eq "*"); # CHECK!!!
+                        # record synonomous and non-synonomous polymorhisms, only considering bi-allelic loci
+                        for ($j = 0; $j < 3; $j++) {
+                            $pos = $gene_start{$gene} + $i + $j;
+                            $locus = $contig."|".$pos;
+                            if (defined $sample_locus_allel_counts{$sample}{$locus}) {
+                                @alleles = (keys %{$sample_locus_allel_counts{$sample}{$locus}});
+                                if (@alleles < 3) {
+                                    $sample_locus_syn{$sample}{$locus} = 0;
+                                    $sample_locus_nonsyn{$sample}{$locus} = 0;
+                                    $base = substr($codon, $j, 1);
+                                    foreach $nt (@alleles) {
+                                        next if ($base eq $nt);
+                                        next if ($sample_locus_allel_counts{$sample}{$locus}{$nt} == 0);
+                                        $mod_codon = $codon;
+                                        substr($mod_codon, $j, 1) = $nt;
+                                        next if ($codon_aminoacid{$mod_codon} eq "*"); # CHECK!!!
+                                        if ($codon_aminoacid{$mod_codon} eq $codon_aminoacid{$codon}) {
+                                            $sample_locus_syn{$sample}{$locus} = 1;
+                                        } else {
+                                            $sample_locus_nonsyn{$sample}{$locus} = 1;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                # Gene on "-" strand
+                if ($gene_strand{$gene} eq "-") {
+                    for ($i = 3; $i < $gene_length{$gene}; $i = $i + 3) { # skipping the start codon
+                        $codon = substr($gene_seq, $i, 3);
+                        # modify codon to represent majority sequence
+                        for ($j = 0; $j < 3; $j++) {
+                            $pos = $gene_end{$gene} - ($i + $j); # ok?
+                            $locus = $contig."|".$pos;
+                            $base = substr($gene_seq, $i + $j, 1);
+                            if (defined $sample_locus_totcount{$sample}{$locus}) {
+                                $rc_base = &make_revcomp($base);
+                                @alleles = (keys %{$sample_locus_allel_counts{$sample}{$locus}});
+                                if (defined $sample_locus_allel_counts{$sample}{$locus}{$rc_base}) {
+                                    $base_counts = $sample_locus_allel_counts{$sample}{$locus}{$rc_base};
+                                } else {
+                                    $base_counts = 0;
+                                }
+                                for ($k = 0; $k < @alleles; $k++) {
+                                    if (length($alleles[$k]) != 1) {
+                                        print "\nError: Variant > 1 bp. Violates pN/pS calculation.\n\n"; die;
+                                    }
+                                    if ($sample_locus_allel_counts{$sample}{$locus}{$alleles[$k]} > $base_counts) {
+                                        $base_counts = $sample_locus_allel_counts{$sample}{$locus}{$alleles[$k]};
+                                        $rc_base = $alleles[$k];
+                                    }
+                                }
+                                $base = &make_revcomp($rc_base);
+                                substr($codon, $j, 1) = $base;
+                            }
+                        }
+                        $sample_codonix_codon{$sample}{$i} = $codon;
+                        next if ($codon_aminoacid{$codon} eq "*"); # CHECK!!!
+                        # record synonomous and non-synonomous polymorhisms, only considering bi-allelic loci
+                        for ($j = 0; $j < 3; $j++) {
+                            $pos = $gene_end{$gene} - ($i + $j); # ok?
+                            $locus = $contig."|".$pos;
+                            if (defined $sample_locus_allel_counts{$sample}{$locus}) {
+                                @alleles = (keys %{$sample_locus_allel_counts{$sample}{$locus}});
+                                if (@alleles < 3) {
+                                    $sample_locus_syn{$sample}{$locus} = 0;
+                                    $sample_locus_nonsyn{$sample}{$locus} = 0;
+                                    $base = substr($codon, $j, 1);
+                                    foreach $nt (@alleles) {
+                                        $rc_nt = &make_revcomp($nt);
+                                        next if ($base eq $rc_nt);
+                                        next if ($sample_locus_allel_counts{$sample}{$locus}{$nt} == 0);
+                                        $mod_codon = $codon;
+                                        substr($mod_codon, $j, 1) = $rc_nt;
+                                        next if ($codon_aminoacid{$mod_codon} eq "*"); # CHECK!!!
+                                        #die if ($locus eq "P1994_127_bin61_k141_448048|1237");
+                                        if ($codon_aminoacid{$mod_codon} eq $codon_aminoacid{$codon}) {
+                                            $sample_locus_syn{$sample}{$locus} = 1;
+                                        } else {
+                                            $sample_locus_nonsyn{$sample}{$locus} = 1;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            # record synonomous and non-synonomous "divergence" in every pair of samples, and calculate NI (neutrality index)
+            for ($ix1 = 0; $ix1 < @samples; $ix1++) {
+                $sample1 = $samples[$ix1];
+                for ($ix2 = $ix1 + 1; $ix2 < @samples; $ix2++) {
+                    $sample2 = $samples[$ix2];
+                    $ps1 = $ps2 = $pn1 = $pn2 = $ds = $dn = 0;
+                    if ($gene_strand{$gene} eq "+") {
+                        for ($i = 3; $i < $gene_length{$gene}; $i = $i + 3) { # skipping the start codon
+                            for ($j = 0; $j < 3; $j++) {
+                                next if ($codon_aminoacid{$sample_codonix_codon{$sample1}{$i}} eq "*");
+                                next if ($codon_aminoacid{$sample_codonix_codon{$sample2}{$i}} eq "*");
+                                $pos = $gene_start{$gene} + $i + $j;
+                                $locus = $contig."|".$pos;
+                                if (defined $sample_locus_totcount{$sample1}{$locus}) {
+                                    if (defined $sample_locus_totcount{$sample2}{$locus}) {
+                                        @alleles = (keys %{$sample_locus_allel_counts{$sample1}{$locus}});
+                                        if (@alleles == 2) {
+                                            if (($sample_locus_allel_counts{$sample1}{$locus}{$alleles[0]} == 0) and ($sample_locus_allel_counts{$sample2}{$locus}{$alleles[1]} == 0)) {
+                                                $codon = $sample_codonix_codon{$sample1}{$i};
+                                                $mod_codon = $codon;
+                                                if (substr($codon, $j, 1) eq $alleles[0]) {
+                                                    substr($mod_codon, $j, 1) = $alleles[1];
+                                                } else {
+                                                    substr($mod_codon, $j, 1) = $alleles[0];
+                                                }
+                                            
+                                                if ($codon_aminoacid{$mod_codon} eq $codon_aminoacid{$codon}) {
+                                                    $ds++;
+                                                    print"+ $gene ds\n";
+                                                } else {
+                                                    $dn++;
+                                                    print"+ $gene dn\n";
+                                                }
+                                            } else {
+                                                $ps1 = $ps1 + $sample_locus_syn{$sample1}{$locus};
+                                                $ps2 = $ps2 + $sample_locus_syn{$sample2}{$locus};
+                                                $pn1 = $pn1 + $sample_locus_nonsyn{$sample1}{$locus};
+                                                $pn2 = $pn2 + $sample_locus_nonsyn{$sample2}{$locus};
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    if ($gene_strand{$gene} eq "-") {
+                        $gene_seq = &make_revcomp($gene_seq);
+                        for ($i = 3; $i < $gene_length{$gene}; $i = $i + 3) { # skipping the start codon
+                            for ($j = 0; $j < 3; $j++) {
+                                next if ($codon_aminoacid{$sample_codonix_codon{$sample1}{$i}} eq "*");
+                                next if ($codon_aminoacid{$sample_codonix_codon{$sample2}{$i}} eq "*");
+                                $pos = $gene_end{$gene} - ($i + $j); # ok?
+                                $locus = $contig."|".$pos;
+                                if (defined $sample_locus_totcount{$sample1}{$locus}) {
+                                    if (defined $sample_locus_totcount{$sample2}{$locus}) {
+                                        @alleles = (keys %{$sample_locus_allel_counts{$sample1}{$locus}});
+                                        if (@alleles == 2) {
+                                            if (($sample_locus_allel_counts{$sample1}{$locus}{$alleles[0]} == 0) and ($sample_locus_allel_counts{$sample2}{$locus}{$alleles[1]} == 0)) {
+                                                $codon = $sample_codonix_codon{$sample1}{$i};
+                                                $mod_codon = $codon;
+                                                $rc_nt = &make_revcomp($alleles[0]);
+                                                if (substr($codon, $j, 1) eq $rc_nt) {
+                                                    substr($mod_codon, $j, 1) = &make_revcomp($alleles[0]);
+                                                } else {
+                                                    substr($mod_codon, $j, 1) = $rc_nt;
+                                                }
+                                                if ($codon_aminoacid{$mod_codon} eq $codon_aminoacid{$codon}) {
+                                                    $ds++;
+                                                } else {
+                                                    $dn++;
+                                                }
+                                            } else {
+                                                $ps1 = $ps1 + $sample_locus_syn{$sample1}{$locus};
+                                                $ps2 = $ps2 + $sample_locus_syn{$sample2}{$locus};
+                                                $pn1 = $pn1 + $sample_locus_nonsyn{$sample1}{$locus};
+                                                $pn2 = $pn2 + $sample_locus_nonsyn{$sample2}{$locus};
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    $sample_sample_gene_ni{$sample1}{$sample2}{$gene} = "NA";
+                    $sample_sample_gene_ni{$sample2}{$sample1}{$gene} = "NA";
+                    if ($ps1*$dn*$ds > 0) {
+                        $sample_sample_gene_ni{$sample1}{$sample2}{$gene} = ($pn1/$ps1)/($dn/$ds);
+                    }
+                    if ($ps2*$dn*$ds > 0) {
+                        $sample_sample_gene_ni{$sample2}{$sample1}{$gene} = ($pn2/$ps2)/($dn/$ds);
+                    }
+                    #print"$gene $sample1 $sample2 pn1:$pn1 ps1:$ps1 pn2:$pn2 ps2:$ps2 dn:$dn ds:$ds ni1:$sample_sample_gene_ni{$sample1}{$sample2}{$gene} ni2:$sample_sample_gene_ni{$sample2}{$sample1}{$gene}\n";
+                }
+            }
+        }
+    }
+}
+
 
 sub make_revcomp {
     local($seq) = $_[0];
@@ -1789,8 +2030,8 @@ sub print_output_to_file {
     }
     ###
     if ((@samples > 1) and $gff_file and $n_fst_permutations) {
-        print"$outprefix.permuted-fst-per-gene.txt\n";
-        open (OUT, ">$outprefix.permuted-fst-per-gene.txt");
+        print"$outprefix.$n_fst_permutations.permuted-fst-per-gene.txt\n";
+        open (OUT, ">$outprefix.$n_fst_permutations.permuted-fst-per-gene.txt");
         print OUT "Contig\tGene\tLength\tStart\tEnd\tStrand\tNum_loci";
         for ($i = 0; $i < $n_fst_permutations; $i++) {
             $perm = $i + 1;
