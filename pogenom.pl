@@ -804,7 +804,7 @@ sub estimate_genome_coverage {
         #local($temp) = (keys %{$sample_foundlocus{$sample}})/$sample_estcov{$sample};
         #print "##$sample $num_loci{$sample} $sample_estcov{$sample} $temp\n";
     }
-    $est_num_loci = $est_num_loci/@samples; # this is the estimated total number of loci with variation for all the samples, before splitting up haplotypes
+    $est_num_loci = $est_num_loci/@samples; # this is the estimated total number of loci with variation for the pool of samples, after splitting up haplotypes
 }
 
 sub estimate_genome_coverage_old {
