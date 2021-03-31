@@ -3,7 +3,7 @@
 <section>
 <div class="row">
 <div class="6u">
-<a href="#" class="image feature"><img src="https://github.com/EnvGen/POGENOM/blob/master/images/pogenom_4x4.jpg" alt="" /></a>
+<a href="#" class="image feature"><img src="https://github.com/EnvGen/POGENOM/blob/master/images/pogenom_4x4.jpg" width=200 alt="" /></a>
 </div>
 <div class="6u">
 <p>
