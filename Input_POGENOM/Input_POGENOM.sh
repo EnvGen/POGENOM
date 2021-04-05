@@ -58,7 +58,7 @@ if [[ "$workdir" != /* ]] || [ -z "$workdir" ]; then
     exit 0
 fi
 #Checking key parameters setting
-options=("$dataset" "$min_coverage" "$min_breadth" "$min_bsq_for_cov_median_calculation" "$threads" "$genomes_ext" "$reads_ext" "$fwd_index" "$rev_index" "$bowtie2_params" "$mapqual" "$freebayes_parameters" "$vcffilter_qual")
+options=("$dataset" "$min_coverage" "$min_breadth" "$min_bsq_for_cov_median_calculation" "$threads" "$genomes_ext" "$reads_ext" "$fwd_index" "$rev_index" "$bowtie2_params" "$mapqual" "$freebayes_parameters" "$vcffilter_qual" "$subsampling_fraction")
 for o in "${options[@]}"; do if [ -z "$o" ]; then echo "A key parameter is undefined, please check in the config_files/Input_POGENOM_config.json file the parameters used"; exit 1; fi; done
 
 if [[ $snakemake_extra_params == *","* ]]; then extra_params=$( echo $snakemake_extra_params | sed s/","/" "/g); else extra_params=$snakemake_extra_params; fi
@@ -82,7 +82,7 @@ for p in "${options2[@]}"; do if [ -z "$p" ]; then echo 'A key parameter in "mod
               rm -rf $temp_sub_Reads_dir/Reads/
          fi
          result_dir="PREFILT/"$dataset"/params_cov_"$min_coverage"_mpq_"$mapqual"_bq_"$min_bsq_for_cov_median_calculation"_fr_"$fraction
-      
+
              file_empty=$(grep -v "#" $result_dir/Selected_samples_Genomes.txt | wc -l)
              if [ "$file_empty" -eq 0 ]; then
                 echo -e "INFO: With the current parameter setting: Dataset $dataset - Fraction $fraction - Median coverage threshold $min_coverage - Min-base quality $min_bsq_for_cov_median_calculation - Mapping quality $mapqual\n      There is no Genome - sample with Estimated Median Coverage higher than threshold.\n      A vcf file cannot be created\n"

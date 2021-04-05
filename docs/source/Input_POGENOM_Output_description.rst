@@ -24,14 +24,14 @@ C) 03_MPILEUP.
  A subdirectory per dataset and genome is created. It contains the samtools mpileup file, in which the coverage per genome position is  stored.
  Example of filename::
 
-    03_MPILEUP/<dataset>/<genome_name>/<sample_name>_<genome_name>_mpq_<min mapping_quality>_bq_<min base_quality>_mpileup
+    03_MPILEUP/<dataset>/<genome_name>/<sample_name>_<genome_name>_mpq_<min mapping_quality>_bq_<min base_quality>_mpileup_<subsampling_fraction>
 
 D) 04_mergeable.
- Files passing the filter (minimum coverage, minimum breadth) are subsampled (using samtools view) up to minimum coverage, sorted by  position and stored in this directory.
+ Files passing the filter (minimum coverage, minimum breadth) are subsampled (using samtools view) up to user-defined coverage (defined by "subsampling_fraction"), sorted by position and stored in this directory.
  Example of filename::
 
     04_mergeable/<dataset>/params_<parameters>/<genome_name>/<sample_name>_<genome_name>_RG_sorted_position_subsampled.bam
-    where <parameters> is a string of the key parameters used, for instance 'cov_10_bdth_40_mpq_20_bq_15'.
+    where <parameters> is a string of the key parameters used, for instance 'cov_20_bdth_40_subsamp_max_mpq_20_bq_15'.
 
 The corresponding log file for these steps is(are)::
 
@@ -51,7 +51,7 @@ When "mode": "prefilt", the suffix "_prefilt" will be added to <dataset> in inte
 
 Additionally, the directory ``PREFILT/<dataset>`` is created and contains the subdirectories:
 
-``02_MAPPING``, ``03_MPILEUP``, and ``params_<parameters>``, where <parameters> is a string of the key parameters used, for instance 'cov_10_mpq_20_bq_15_fr_0.15'.
+``02_MAPPING``, ``03_MPILEUP``, and ``params_<parameters>``, where <parameters> is a string of the key parameters used, for instance 'cov_20_mpq_20_bq_15_fr_0.15'.
 
 In the subdirectory ``params_<parameters>``, the following files are stored:
 
@@ -80,11 +80,11 @@ Variant calling files per genome (input for POGENOM) are stored in the directory
 Example of filename::
 
     06_VCF/<dataset>/params_<parameters>/<genome_name>.vcf
-    where <parameters> is a string of the key parameters used, for instance 'cov_10_bdth_40_mpq_20_bq_15'.
+    where <parameters> is a string of the key parameters used, for instance 'cov_20_bdth_40_subsamp_max_mpq_20_bq_15'.
 
 The list of samples used for the generation of the vcf files can be found in the files ``06_VCF/<dataset>/params_<parameters>/<genome_name>_samples.txt``
 
-When no BAM file passes the filter (coverage and breadth), a vcf file cannot be created. 
+When no BAM file passes the filter (coverage and breadth), a vcf file cannot be created.
 In this case, the corresponding <genome_name>_samples.txt file will contain the following statement: "The genome <genome_name> has not BAM file that passes the filter breadth and coverage. A vcf file cannot be created."
 
 When "mode": "prefilt", the suffix "_prefilt" will be added to <dataset> in VCF files, e.g.,

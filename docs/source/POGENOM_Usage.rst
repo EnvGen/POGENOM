@@ -16,7 +16,7 @@ If a GFF file is provided, gene-wise 𝜋 and gene-wise FST will also be calcula
 And if a genetic code file is provided (such as `standard_genetic_code.txt` in the POGENOM distribution), amino acid frequencies will be calculated for each codon position in each gene and sample, and gene-wise 𝜋 and FST will be calculated also at the amino acid level. Now also non-synonymous to synonymous polymorphism rates (pN/pS) will be calculated for each gene in each sample::
 
     perl pogenom.pl --vcf_file <VCF_FILE> --out <OUTPUT_FILES_PREFIX> --gff_file <GFF_FILE> --genetic_code_file <GENETIC_CODE_FILE>
-    
+
 
 Required arguments
 ------------------
@@ -50,10 +50,9 @@ Optional arguments
 ``--keep_haplotypes`` If this is used, POGENOM will not split haplotypes into single-nucleotide variants, which is otherwise the default behaviour.
 
 ``--vcf_format <VCF_FORMAT>`` Specify VCF file format version. Can be set to freebayes (default) or GATK.
- 
+
 ``--fst_perm <FST_PERM>`` Specify number of permutations (integer) for making randomised gene-wise Fst. Without setting this randomised Fst are not generated. Warning: use with care, output files can become huge.
 
 ``--pi_only`` Set this to make POGENOM only calculate and output genome-wide pi (fast).
 
 ``--help`` To print help message on screen.
-

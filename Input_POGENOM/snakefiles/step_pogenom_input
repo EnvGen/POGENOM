@@ -14,7 +14,8 @@ dataset=config["dataset"]
 min_coverage = config["min_coverage"]
 min_breadth = config["min_breadth"]
 bq = config["min_bsq_for_cov_median_calculation"]
-params_dir = "_".join(["params","cov", str(min_coverage), "bdth", str(min_breadth), "mpq", str(mapqual), "bq", str(bq)])
+subsampl=config["subsampling_fraction"]
+params_dir = "_".join(["params","cov", str(min_coverage), "bdth", str(min_breadth),"subsamp", str(subsampl), "mpq", str(mapqual), "bq", str(bq)])
 
 #------------------
 prefix_MAGs = config["my_mag"]
@@ -28,7 +29,7 @@ else:
 #------------------------------------------------------------------
 
 rule step1_all:
-  input: expand("03_MPILEUP/{dataset}_prefilt/{prefix_mag}/{sample}_{prefix_mag}_mpq_{mapqual}_bq_{bq}_mpileup", dataset = dataset, prefix_mag = prefix_MAGs, mapqual = mapqual, sample = samples, bq = bq),
+  input: expand("03_MPILEUP/{dataset}_prefilt/{prefix_mag}/{sample}_{prefix_mag}_mpq_{mapqual}_bq_{bq}_mpileup_{subsampl}", dataset = dataset, prefix_mag = prefix_MAGs, mapqual = mapqual, sample = samples, bq = bq, subsampl=subsampl),
          expand("02_MAPPING/{dataset}_prefilt/{prefix_mag}/{sample}_{prefix_mag}_mpq_{mapqual}_RG_sorted_position.bam.bai", dataset = dataset, prefix_mag = prefix_MAGs, mapqual = mapqual, sample = samples)
 
 rule mapping:
@@ -71,9 +72,9 @@ rule indexing_reads_mapping:
 
 rule mpileup_and_coverage:
   input: expand("02_MAPPING/{dataset}_prefilt/{prefix_mag}/{sample}_{prefix_mag}_mpq_{mapqual}_RG_sorted_position.bam", dataset = dataset, prefix_mag = prefix_MAGs, mapqual = mapqual, sample = samples)
-  output: expand("03_MPILEUP/{{dataset}}_prefilt/{{prefix_mag}}/{{sample}}_{{prefix_mag}}_mpq_{{mapqual}}_bq_{{bq}}_mpileup", dataset = dataset, prefix_mag = prefix_MAGs, mapqual = mapqual, sample = samples, bq = bq)
+  output: expand("03_MPILEUP/{{dataset}}_prefilt/{{prefix_mag}}/{{sample}}_{{prefix_mag}}_mpq_{{mapqual}}_bq_{{bq}}_mpileup_{{subsampl}}", dataset = dataset, prefix_mag = prefix_MAGs, mapqual = mapqual, sample = samples, bq = bq, subsampl=subsampl)
   params: input="02_MAPPING/{dataset}_prefilt/{prefix_mag}/{sample}_{prefix_mag}_mpq_{mapqual}_RG_sorted_position.bam",
-          out="03_MPILEUP/{dataset}_prefilt/{prefix_mag}/{sample}_{prefix_mag}_mpq_{mapqual}_bq_{bq}_mpileup",
+          out="03_MPILEUP/{dataset}_prefilt/{prefix_mag}/{sample}_{prefix_mag}_mpq_{mapqual}_bq_{bq}_mpileup_{subsampl}",
           merg="04_mergeable/{dataset}_prefilt/"+params_dir+"/{prefix_mag}/{sample}_{prefix_mag}_RG_sorted_position_subsampled.bam",
           mag="{prefix_mag}",
           dataset="{dataset}_prefilt",
@@ -82,14 +83,15 @@ rule mpileup_and_coverage:
           minbreadth=int(config["min_breadth"]),
           minbasequal=int(config["min_bsq_for_cov_median_calculation"]),
           threads=int(config["threads"]),
-          pdir = params_dir
+          pdir = params_dir,
+          subsam=config["subsampling_fraction"]
   message: "Samtools mpileup and calculating coverage, breadth and filtering {params.input} file"
   shell: """
           samtools mpileup -d 1000000 -Q {params.minbasequal} -a {params.input} > {params.out}
-          bash src/cov_bdrth_in_dataset.sh {params.out} {params.input} {params.merg} {params.mag} {params.mincov} {params.minbreadth} {params.threads} {params.dataset} {params.sp} {params.pdir}
+          bash src/cov_bdrth_in_dataset.sh {params.out} {params.input} {params.merg} {params.mag} {params.mincov} {params.minbreadth} {params.threads} {params.dataset} {params.sp} {params.pdir} {params.subsam}
          """
 rule vcf:
-    input: expand("03_MPILEUP/{dataset}_prefilt/{prefix_mag}/{sample}_{prefix_mag}_mpq_{mapqual}_bq_{bq}_mpileup", dataset = dataset, prefix_mag = prefix_MAGs, mapqual = mapqual, sample = samples, bq = bq)
+    input: expand("03_MPILEUP/{dataset}_prefilt/{prefix_mag}/{sample}_{prefix_mag}_mpq_{mapqual}_bq_{bq}_mpileup_{subsampl}", dataset = dataset, prefix_mag = prefix_MAGs, mapqual = mapqual, sample = samples, bq = bq, subsampl=subsampl)
     output: expand("06_VCF/{dataset}_prefilt/{params_dir}/{prefix_mag}_samples.txt", dataset=dataset, prefix_mag = prefix_MAGs, params_dir = params_dir)
     params: mag = config["my_mag"],
             wd=config["workdir"],

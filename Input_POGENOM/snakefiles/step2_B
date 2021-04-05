@@ -12,7 +12,8 @@ prefix_MAGs = config["mag_name"]
 min_coverage = config["min_coverage"]
 min_breadth = config["min_breadth"]
 bq = config["min_bsq_for_cov_median_calculation"]
-params_dir = "_".join(["params","cov", str(min_coverage), "bdth", str(min_breadth), "mpq", str(mapqual), "bq", str(bq)])
+subsampl=config["subsampling_fraction"]
+params_dir = "_".join(["params","cov", str(min_coverage), "bdth", str(min_breadth),"subsamp", str(subsampl), "mpq", str(mapqual), "bq", str(bq)])
 
 if config["mode"] == "prefilt" :
     dataset=config["dataset"]+"_prefilt"

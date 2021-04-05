@@ -92,13 +92,27 @@ In the "Input_POGENOM_config.json" file, set the parameters to be used. It conta
 "remove_subreads": "no",
   Remove the directory of subsampled reads (i.e., ``<temp_sub_Reads_dir>/Reads/``) after usage. This directory is created during sample prescreening, when "mode": "prefilt" is used.
 
-"min_coverage": 10,
+"min_coverage": 20,
   Minimum median coverage depth per sample per genome. Integer. Samples below this threshold will not be included in the subsequent comparative analysis.
   When "mode": "prefilt", and "fraction" : "0.10", a "min_coverage" value lower than 10 will select all samples, and the prescreening will be obsolete.
   It cannot be empty.
 
 "min_breadth": 40,
   Minimum coverage breadth (percentage of genome covered) per sample per genome. Integer.
+  It cannot be empty.
+
+"subsampling_fraction": "max",
+  Subsample reads. fraction of templates/read pairs to keep.
+  Fraction used to downsample BAM files from samples that will be included in the subsequent comparative analysis.
+
+  Options: ``min``, ``max``, ``float number``.
+  ``min``, samples will be downsampled to user-defined minimum median coverage (i.e, min_coverage).
+  ``max``, all reads will be used, and samples won't be downsampled.
+  ``FLOAT``, float number [0.1 -1.0]. Fraction of reads to be included in the comparative analysis (fraction = desired coverage / actual coverage).
+
+  If the selected fraction leads to a final coverage lower than the user-defined min_coverage, the samples will be then downsampled to user-defined min_coverage.
+  If 1.0, all reads will be included and samples won't be downsampled.
+
   It cannot be empty.
 
 "min_bsq_for_cov_median_calculation": 15,

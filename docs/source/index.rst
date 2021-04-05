@@ -1,5 +1,11 @@
 .. POGENOM
 
+
+.. figure:: pogenomfig.png
+   :width: 400px
+   :align: center
+
+
 POGENOM's documentation
 =======================
 POGENOM is a computer program that calculates several population genomic parameters for a genome in relation to a set of metagnome samples.
@@ -11,7 +17,7 @@ POGENOM takes as minimal input a file of the variant call format (VCF). This is 
 Installation
 ============
 
-Download the latest POGENOM distribution from https://github.com/EnvGen/POGENOM/releases and extract the files. 
+Download the latest POGENOM distribution from https://github.com/EnvGen/POGENOM/releases and extract the files.
 You need to have Perl installed on your computer to run POGENOM. When running POGENOM, either move to the directory where you have put the files or give the path to the files when running, i.e. `perl path/to/pogenom.pl ...`
 
 
@@ -20,7 +26,7 @@ Contents
 
 .. toctree::
    :maxdepth: 4
-   
+
    self
    POGENOM_Usage
    Input_POGENOM
@@ -34,5 +40,3 @@ POGENOM doesn't have a paper yet, meanwhile please cite it like this:
 Sjöqvist C, Delgado Zambrano LF, Alneberg J, Andersson AF (2020). POGENOM: population genomics from metagenomes.https://github.com/EnvGen/POGENOM.
 
 If you use the Input_POGENOM pipeline, make sure to cite the included software/packages that are listed in its documentation.
-
-

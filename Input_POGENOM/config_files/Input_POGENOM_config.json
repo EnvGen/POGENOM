@@ -1,8 +1,9 @@
 {
-  "workdir": "/absolute/path/to/Input_POGENOM",
+  "workdir": "/absolute/path/to/POGENOM/Input_POGENOM",
   "dataset": "name",
-  "min_coverage": 10,
+  "min_coverage": 20,
   "min_breadth": 40,
+  "subsampling_fraction": "min",
   "min_bsq_for_cov_median_calculation": 15,
   "mode": "prefilt",
   "fraction": "0.15",
