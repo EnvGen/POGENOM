@@ -31,7 +31,7 @@ D) 04_mergeable.
  Example of filename::
 
     04_mergeable/<dataset>/params_<parameters>/<genome_name>/<sample_name>_<genome_name>_RG_sorted_position_subsampled.bam
-    where <parameters> is a string of the key parameters used, for instance 'cov_20_bdth_40_subsamp_FALSE_mpq_20_bq_15'.
+    where <parameters> is a string of the key parameters used, for instance 'cov_20_bdth_40_subsamp_TRUE_mpq_20_bq_15'.
 
 The corresponding log file for these steps is(are)::
 
@@ -80,7 +80,7 @@ Variant calling files per genome (input for POGENOM) are stored in the directory
 Example of filename::
 
     06_VCF/<dataset>/params_<parameters>/<genome_name>.vcf
-    where <parameters> is a string of the key parameters used, for instance 'cov_20_bdth_40_subsamp_FALSE_mpq_20_bq_15'.
+    where <parameters> is a string of the key parameters used, for instance 'cov_20_bdth_40_subsamp_TRUE_mpq_20_bq_15'.
 
 The list of samples used for the generation of the vcf files can be found in the files ``06_VCF/<dataset>/params_<parameters>/<genome_name>_samples.txt``
 
