@@ -26,9 +26,10 @@ wkd=$(pwd)
 cov=$(cut -f4 $mpileupfile | grep -v "0" | sort -n | awk ' { a[i++]=$1; } END { x=int((i+1)/2); if (x < (i+1)/2) print (a[x-1]+a[x])/2; else print a[x-1]; }')
 
 #---size
-check=$(echo "$dataset" | cut -d "_" -f2)
+#check=$(echo "$dataset" | cut -d "_" -f2)
+check=$(echo "$dataset" | grep "prefilt" | wc -l)
 
-if [[ "$check" == "prefilt" ]]; then
+if [ "$check" -eq 1 ]; then
    direct=$(echo $dataset | sed s/"_prefilt"//)
 else
     direct="$dataset"
@@ -49,24 +50,13 @@ mkdir -p 04_mergeable/$dataset/$pdir/$mag
 
 #---selection of BAM files and subsample
 if (( $(echo "$breadth >= $minbreadth" | bc -l) )) && (( $(echo "$cov >= $mincov" | bc -l) )); then
-  if [[ $subsamp == "max" ]]; then
-     echo "        You have selected not to downsample BAM file for - Genome: $mag - Sample: $samplename "
+  if [[ $subsamp == FALSE ]]; then
+     echo "        You have selected not to downsample selected BAM file for - Genome: $mag - Sample: $samplename "
      samtools sort -o $outbamfile --threads $threads $bamfile
 
   else
-      mincovlimite=$(echo "scale=3; $mincov/$cov" | bc )
-      if [[ $subsamp == "min" ]]; then subsamp=$mincovlimite; fi
-
-      if (( $(echo  "$subsamp > $mincovlimite" | bc -l) )); then
-        limite=$subsamp
-        actualcov=$(echo "scale=3; $subsamp*$cov" | bc )
-        echo "        Downsampling on samples passing the min_cov and breath thresould will be carried out using user-defined subsampling fraction"
-        echo "        Downsampling coverage to $actualcov - Genome: $mag - Sample: $samplename "
-      else
-        echo "        Downsampling coverage to $mincov - Genome: $mag - Sample: $samplename "
-        limite=$mincovlimite
-      fi
-
+    echo "        Downsampling coverage to $mincov - Genome: $mag - Sample: $samplename "
+    limite=$(echo "scale=3; $mincov/$cov" | bc )
     samp=$(echo "scale=3; ($limite)+10" | bc)
     samtools view -Sbh --threads $threads -s $samp $bamfile | samtools sort -o $outbamfile --threads $threads
   fi

@@ -35,7 +35,7 @@ D) 04_mergeable.
 
 The corresponding log file for these steps is(are)::
 
-    log_files/<dataset>_genomes_coverage_breadth.log or log_files/<dataset>.<genome_name>.coverage_breadth.log (when "mode": "prefilt")
+    log_files/<dataset>_genomes_coverage_breadth.log or log_files/<dataset>.<genome_name>.coverage_breadth.log (when "mode_prefilt" used)
 
 E) 05_BAM_merged.
  When the number of BAM files in 04_mergeable/ directory is more than 1, the files are merged into one BAM file per genome. The read group (@RG) information from each BAM file, corresponding to the sample name, is kept.
@@ -44,10 +44,10 @@ E) 05_BAM_merged.
     05_BAM_merged/<dataset>/params_<parameters>/<genome_name>_merged_sorted_position.bam
 
 
-Intermediate files when "mode": "prefilt"
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Intermediate files when "mode_prefilt" is used
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-When "mode": "prefilt", the suffix "_prefilt" will be added to <dataset> in intermediate files B-E, e.g., 05_BAM_merged/<dataset>_prefilt/<genome_name>_merged_sorted_position.bam
+When "mode_prefilt" is used, the suffix "_prefilt" will be added to <dataset> in intermediate files B-E, e.g., 05_BAM_merged/<dataset>_prefilt/<genome_name>_merged_sorted_position.bam
 
 Additionally, the directory ``PREFILT/<dataset>`` is created and contains the subdirectories:
 
@@ -87,12 +87,12 @@ The list of samples used for the generation of the vcf files can be found in the
 When no BAM file passes the filter (coverage and breadth), a vcf file cannot be created.
 In this case, the corresponding <genome_name>_samples.txt file will contain the following statement: "The genome <genome_name> has not BAM file that passes the filter breadth and coverage. A vcf file cannot be created."
 
-When "mode": "prefilt", the suffix "_prefilt" will be added to <dataset> in VCF files, e.g.,
+When "mode_prefilt" is used, the suffix "_prefilt" will be added to <dataset> in VCF files, e.g.,
 06_VCF/<dataset>_prefilt/params_<parameters>/<genome_name>.vcf
 
 The corresponding log file for these steps is (are)::
 
-    log_files/<dataset>_genomes_vcf_files.log or log_files/<dataset>.<genome_name>_vcf_files.log (when "mode": "prefilt")
+    log_files/<dataset>_genomes_vcf_files.log or log_files/<dataset>.<genome_name>_vcf_files.log (when "mode_prefilt" is used)
 
 Genome size files
 ^^^^^^^^^^^^^^^^^

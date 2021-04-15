@@ -10,7 +10,7 @@ thrs = config["threads"]
 reads_ext = config["reads_ext"]
 mags_ext = config["genomes_ext"]
 MAGs_dir = os.path.join(config["workdir"], "RAW_DATA", "Genomes", config["dataset"])
-READS_dir = os.path.join(config["workdir"], config["temp_sub_Reads_dir"], "Reads", "fraction_"+config["fraction"])
+O_READS_dir = os.path.join(config["workdir"], "RAW_DATA", "Reads", config["dataset"])
 fraction = config["fraction"]
 dataset=config["dataset"]
 min_coverage = config["min_coverage"]
@@ -28,7 +28,7 @@ else:
 
 prefix_MAGs = [ m.split(mags_ext)[0] for m in os.listdir(MAGs_dir) if m.endswith(mags_ext)]
 reads_suffix= config["rev_index"]+reads_ext
-samples = [ r.split(reads_suffix)[0] for r in os.listdir(READS_dir) if r.endswith(reads_suffix)]
+samples = [ r.split(reads_suffix)[0] for r in os.listdir(O_READS_dir) if r.endswith(reads_suffix)]
 
 
 #------------------

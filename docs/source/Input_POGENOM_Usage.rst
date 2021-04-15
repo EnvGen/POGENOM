@@ -14,7 +14,7 @@ Go to the directory Input_POGENOM/RAW_DATA/Reads/::
 
     cd Input_POGENOM/RAW_DATA/Reads/
 
-Create a directory for each dataset::
+Create a directory for each dataset (with an optional name)::
 
     mkdir <dataset_name>
 
@@ -75,48 +75,39 @@ In the "Input_POGENOM_config.json" file, set the parameters to be used. It conta
 "dataset": "name of the dataset to be analysed",
   It cannot be empty.
 
-"mode": "prefilt",
-  When "mode": "prefilt", the pipeline will do a quick prescreening by mapping a subset of the reads from each sample, to estimate the     coverage of the samples and determine which should be included.
-  If no prescreening (prefilt) is required, then set an empty string ("mode": "",).
+"mode_prefilt": "TRUE",
+  To activate mode_prefilt set option to ``"TRUE"``. 
+  The pipeline will do a quick prescreening by mapping a subset of the reads from each sample, to estimate the     coverage of the samples and determine which should be included.
+  If no prescreening (prefilt) is required, set option to ``"FALSE"``.
 
 "fraction": "0.15",
-  Fraction of reads to be subsampled when running the pipeline using "mode": "prefilt".
+  Fraction of reads to be subsampled when running the pipeline using "mode_prefilt".
   Lowering the fraction increases the uncertaintly in the coverage estimates.
   Increasing the fraction increases the size of the directory ``<temp_sub_Reads_dir>/Reads/`` and the runtime.
-  Required is mode "prefilt" used.
+  Required when "mode_prefilt" used.
 
 "temp_sub_Reads_dir": "PREFILT",
-  Directory storing the subsampled reads when running the pipeline using "mode": "prefilt". The size of this directory will be    "fraction" * the size of "dataset".
-  Required is mode "prefilt" used.
+  Directory storing the subsampled reads when running the pipeline using "mode_prefilt". The size of this directory will be    "fraction" * the size of "dataset".
+  Required when mode "mode_prefilt" used.
 
-"remove_subreads": "no",
-  Remove the directory of subsampled reads (i.e., ``<temp_sub_Reads_dir>/Reads/``) after usage. This directory is created during sample prescreening, when "mode": "prefilt" is used.
+"remove_subreads": "FALSE",
+  If ``"TRUE"`` the directory of subsampled reads (i.e., ``<temp_sub_Reads_dir>/Reads/``) will be removed after usage. This directory is created during sample prescreening, when "mode_prefilt" is used.
 
 "min_coverage": 20,
-  Minimum median coverage depth per sample per genome. Integer. Samples below this threshold will not be included in the subsequent comparative analysis.
-  When "mode": "prefilt", and "fraction" : "0.10", a "min_coverage" value lower than 10 will select all samples, and the prescreening will be obsolete.
+  Minimum median coverage depth per sample per genome. Integer. Sample/genome combinations below this threshold will not be included in the subsequent analysis.
   It cannot be empty.
 
 "min_breadth": 40,
   Minimum coverage breadth (percentage of genome covered) per sample per genome. Integer.
   It cannot be empty.
 
-"subsampling_fraction": "max",
-  Subsample reads. fraction of templates/read pairs to keep.
-  Fraction used to downsample BAM files from samples that will be included in the subsequent comparative analysis.
-
-  Options: ``min``, ``max``, ``float number``.
-  ``min``, samples will be downsampled to user-defined minimum median coverage (i.e, min_coverage).
-  ``max``, all reads will be used, and samples won't be downsampled.
-  ``FLOAT``, float number [0.1 -1.0]. Fraction of reads to be included in the comparative analysis (fraction = desired coverage / actual coverage).
-
-  If the selected fraction leads to a final coverage lower than the user-defined min_coverage, the samples will be then downsampled to user-defined min_coverage.
-  If 1.0, all reads will be included and samples won't be downsampled.
-
+"subsampling_coverage": "TRUE",
+  Sample/genome combinations above used-defined threshold (i.e., min_cov, Breadth) will be, by default (``"TRUE"``), downsampled to user-defined Minimum median coverage.
+  If the user do not want to downsample the selected Sample/genome combinations, set option to ``"FALSE"``.
   It cannot be empty.
 
 "min_bsq_for_cov_median_calculation": 15,
-  Minimum base quality when counting the number of bases per genome position during coverage calculation. Integer. It cannot be empty.
+  Minimum base quality when counting the coverage depth per genome position during coverage calculation. Integer. It cannot be empty.
 
 "threads": 15,
   Number of threads. Integer. It cannot be empty.
@@ -135,7 +126,7 @@ In the "Input_POGENOM_config.json" file, set the parameters to be used. It conta
 
 "bowtie2_params": "--ignore-quals --mp 1,1 --np 1 --rdg 0,1 --rfg 0,1 --score-min L,0,-0.05",
   Bowtie2 mapping parameters. The –score-min then gives the minimum score that is allowed to report an alignment.
-  Here, It represents a 95% identity threshold.
+  Here, it represents a 95% identity threshold.
   For more information visit http://bowtie-bio.sourceforge.net/bowtie2/manual.shtml
 
 "mapqual": 20,
@@ -153,8 +144,9 @@ In the "Input_POGENOM_config.json" file, set the parameters to be used. It conta
   The flag ``-q --min-base-quality Q``, exclude alleles from analysis if their supporting base quality is less than Q.
 
 "vcffilter_qual": "'QUAL > 20'"
-  Filtering variant calling. It cannot be empty.
+  Filtering variant calling.
   Here it removes any sites with an estimated probability of not being polymorphic less than Phred 20 (corresponding to 99% probability of being a real SNP).
+  It cannot be empty.
 
 "snakemake_extra_params": "<command line 1>, <command line 2>"
   Snakemake extra command line options (comma-separated) to be used. If you don't want to use any extra command line, set an empty string, "snakemake_extra_params": "".

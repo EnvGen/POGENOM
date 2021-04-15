@@ -14,7 +14,7 @@ dataset=config["dataset"]
 min_coverage = config["min_coverage"]
 min_breadth = config["min_breadth"]
 bq = config["min_bsq_for_cov_median_calculation"]
-subsampl=config["subsampling_fraction"]
+subsampl=config["subsampling_coverage"]
 params_dir = "_".join(["params","cov", str(min_coverage), "bdth", str(min_breadth),"subsamp", str(subsampl), "mpq", str(mapqual), "bq", str(bq)])
 
 #------------------
@@ -84,7 +84,7 @@ rule mpileup_and_coverage:
           minbasequal=int(config["min_bsq_for_cov_median_calculation"]),
           threads=int(config["threads"]),
           pdir = params_dir,
-          subsam=config["subsampling_fraction"]
+          subsam=config["subsampling_coverage"]
   message: "Samtools mpileup and calculating coverage, breadth and filtering {params.input} file"
   shell: """
           samtools mpileup -d 1000000 -Q {params.minbasequal} -a {params.input} > {params.out}

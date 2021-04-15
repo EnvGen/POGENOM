@@ -12,10 +12,10 @@ prefix_MAGs = config["mag_name"]
 min_coverage = config["min_coverage"]
 min_breadth = config["min_breadth"]
 bq = config["min_bsq_for_cov_median_calculation"]
-subsampl=config["subsampling_fraction"]
+subsampl=config["subsampling_coverage"]
 params_dir = "_".join(["params","cov", str(min_coverage), "bdth", str(min_breadth),"subsamp", str(subsampl), "mpq", str(mapqual), "bq", str(bq)])
 
-if config["mode"] == "prefilt" :
+if config["mode_prefilt"] == "TRUE" :
     dataset=config["dataset"]+"_prefilt"
 else:
     dataset=config["dataset"]
