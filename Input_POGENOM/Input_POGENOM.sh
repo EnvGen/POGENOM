@@ -58,7 +58,7 @@ if [[ "$workdir" != /* ]] || [ -z "$workdir" ]; then
     exit 0
 fi
 #Checking key parameters setting
-options=("$dataset" "$min_coverage" "$min_breadth" "$min_bsq_for_cov_median_calculation" "$threads" "$genomes_ext" "$reads_ext" "$fwd_index" "$rev_index" "$bowtie2_params" "$mapqual" "$freebayes_parameters" "$vcffilter_qual" "$subsampling_coverage")
+options=("$dataset" "$min_coverage" "$min_breadth" "$min_bsq_for_cov_median_calculation" "$threads" "$genomes_ext" "$reads_ext" "$fwd_index" "$rev_index" "$bowtie2_params" "$mapqual" "$freebayes_parameters" "$vcffilter_qual" "$subsample")
 for o in "${options[@]}"; do if [ -z "$o" ]; then echo "A key parameter is undefined, please check in the config_files/Input_POGENOM_config.json file the parameters used"; exit 1; fi; done
 
 if [[ $snakemake_extra_params == *","* ]]; then extra_params=$( echo $snakemake_extra_params | sed s/","/" "/g); else extra_params=$snakemake_extra_params; fi

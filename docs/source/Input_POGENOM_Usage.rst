@@ -76,7 +76,7 @@ In the "Input_POGENOM_config.json" file, set the parameters to be used. It conta
   It cannot be empty.
 
 "mode_prefilt": "TRUE",
-  To activate mode_prefilt set option to ``"TRUE"``. 
+  To activate mode_prefilt set option to ``"TRUE"``.
   The pipeline will do a quick prescreening by mapping a subset of the reads from each sample, to estimate the     coverage of the samples and determine which should be included.
   If no prescreening (prefilt) is required, set option to ``"FALSE"``.
 
@@ -101,7 +101,7 @@ In the "Input_POGENOM_config.json" file, set the parameters to be used. It conta
   Minimum coverage breadth (percentage of genome covered) per sample per genome. Integer.
   It cannot be empty.
 
-"subsampling_coverage": "TRUE",
+"subsample": "TRUE",
   Sample/genome combinations above used-defined threshold (i.e., min_cov, Breadth) will be, by default (``"TRUE"``), downsampled to user-defined Minimum median coverage.
   If the user do not want to downsample the selected Sample/genome combinations, set option to ``"FALSE"``.
   It cannot be empty.

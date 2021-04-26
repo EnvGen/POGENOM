@@ -3,7 +3,7 @@
   "dataset": "name",
   "min_coverage": 20,
   "min_breadth": 40,
-  "subsampling_coverage": "TRUE",
+  "subsample": "TRUE",
   "min_bsq_for_cov_median_calculation": 15,
   "mode_prefilt": "TRUE",
   "fraction": "0.15",
