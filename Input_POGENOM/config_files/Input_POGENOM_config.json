@@ -9,7 +9,7 @@
   "fraction": "0.15",
   "temp_sub_Reads_dir": "PREFILT",
   "remove_subreads": "FALSE",
-  "threads": 5,
+  "threads": 15,
   "genomes_ext": ".fa",
   "reads_ext": ".fq.gz",
   "fwd_index": "_R1",
