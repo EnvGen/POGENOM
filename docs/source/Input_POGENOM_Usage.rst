@@ -102,9 +102,7 @@ In the "Input_POGENOM_config.json" file, set the parameters to be used. It conta
   It cannot be empty.
 
 "subsample": "TRUE",
-  Sample/genome combinations above used-defined threshold (i.e., min_cov, Breadth) will be, by default (``"TRUE"``), downsampled to user-defined Minimum median coverage.
-  If the user do not want to downsample the selected Sample/genome combinations, set option to ``"FALSE"``.
-  It cannot be empty.
+  Sample/genome combinations fulfilling the user-defined thresholds (i.e., min_coverage, min_breadth) will, per default (``"TRUE"``), be downsampled to the user-defined min_coverage median coverage. If the user do not want to downsample, set option to ``"FALSE"``. It cannot be empty.
 
 "min_bsq_for_cov_median_calculation": 15,
   Minimum base quality when counting the coverage depth per genome position during coverage calculation. Integer. It cannot be empty.
