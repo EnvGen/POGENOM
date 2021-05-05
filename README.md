@@ -11,9 +11,7 @@ POGENOM takes as input a file of the variant call format (VCF). This is generate
 Documentation for POGENOM and the Input_POGENOM pipeline is hosted on [readthedocs](https://pogenom.readthedocs.org).
 
 ## Citing POGENOM ##
-POGENOM doesn't have a paper yet, meanwhile please cite it like this:
-
-Sjöqvist, Delgado Zambrano, Alneberg, Andersson AF (2020) POGENOM: population genomics from metagenomes https://github.com/EnvGen/POGENOM.
+Conny Sjöqvist, Luis Fernando Delgado, Johannes Alneberg, Anders F. Andersson (2021) **Ecologically coherent population structure of uncultivated bacterioplankton**. _ISME J_. https://doi.org/10.1038/s41396-021-00985-z
 
 If you use the Input_POGENOM pipeline, please make sure to cite the software it depends on listed in the documentation.
 
