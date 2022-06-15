@@ -23,7 +23,7 @@ subsamp="${11}"
 wkd=$(pwd)
 
 #--- Median coverage
-cov=$(cut -f4 $mpileupfile | grep -v "0" | sort -n | awk ' { a[i++]=$1; } END { x=int((i+1)/2); if (x < (i+1)/2) print (a[x-1]+a[x])/2; else print a[x-1]; }')
+cov=$(cut -f4 $mpileupfile | grep -vw "0" | sort -n | awk ' { a[i++]=$1; } END { x=int((i+1)/2); if (x < (i+1)/2) print (a[x-1]+a[x])/2; else print a[x-1]; }')
 
 #---size
 #check=$(echo "$dataset" | cut -d "_" -f2)
@@ -41,7 +41,7 @@ mkdir -p Genome_sizes
 echo "genome size:" $positions > Genome_sizes/$mag.size
 
 #---breadth
-non_zero=$(cut -f4 $mpileupfile | grep -cv "0")
+non_zero=$(cut -f4 $mpileupfile | grep -cvw "0")
 breadth=$(echo $non_zero*100/$positions | bc -l )
 
 echo "Genome:" $mag "- Sample:" $samplename "Median_coverage:" $cov " breadth %:" $breadth
