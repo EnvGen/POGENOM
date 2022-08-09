@@ -54,18 +54,21 @@ rule merge_bam_files:
 
 rule freebayes:
      input: mag=expand("RAW_DATA/Genomes/{data}/{prefix_mag}{magext}", data = config["dataset"], prefix_mag = prefix_MAGs, magext = mags_ext),
-           bam=expand("05_BAM_merged/{dataset}/{params_dir}/{prefix_mag}_merged_sorted_position.bam",  dataset = dataset, prefix_mag = prefix_MAGs, params_dir = params_dir)
+            bam=expand("05_BAM_merged/{dataset}/{params_dir}/{prefix_mag}_merged_sorted_position.bam",  dataset = dataset, prefix_mag = prefix_MAGs, params_dir = params_dir)
      output: expand("06_VCF/{{dataset}}/{{params_dir}}/{{prefix_mag}}.vcf", dataset = dataset, prefix_mag = prefix_MAGs, params_dir = params_dir)
      threads: thrs
      params: pr=config["freebayes_parameters"],
              mag="RAW_DATA/Genomes/"+config["dataset"]+"/{prefix_mag}"+config["genomes_ext"],
              bam="05_BAM_merged/{dataset}/"+params_dir+"/{prefix_mag}_merged_sorted_position.bam",
              out="06_VCF/{dataset}/"+params_dir+"/{prefix_mag}.vcf",
+             outmono="06_VCF/{dataset}/"+params_dir+"/{prefix_mag}_unfiltred.vcf",
              log="06_VCF/{dataset}/"+params_dir+"/{prefix_mag}_samples.txt",
              qual=config["vcffilter_qual"]
      message: "Generating vcf file on {params.mag} using parameters {params.pr} and vcffilter {params.qual}"
      shell: """
-                samtools index {params.bam} -@ {threads}
-                freebayes -f {params.mag} {params.bam} {params.pr} | vcffilter -f {params.qual} > {params.out}
+                samtools index {params.bam}
+                samtools faidx {params.mag} -o {params.mag}.fai
+                freebayes-parallel <(fasta_generate_regions.py {params.mag}.fai 100000) {threads} -f {params.mag} {params.pr} {params.bam} > {params.outmono}
+                vcffilter -f {params.qual} {params.outmono} > {params.out}
                 vcfsamplenames {params.out} > {params.log}
             """
