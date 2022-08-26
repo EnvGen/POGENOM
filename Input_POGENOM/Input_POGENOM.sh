@@ -20,6 +20,7 @@ err_report() {
     exit 1
 }
 trap 'err_report $LINENO' ERR
+start=`date +%s`
 #Default options
 configFile=$wd/config_files/Input_POGENOM_config.json
 #----Argument parse----------------------
@@ -40,14 +41,12 @@ case $a in
   echo -e 'Description:\nThis program executes a pipeline that generates the required input files for POGENOM.\nThe aim of this pipeline is to increase the reproducibility of the data analysis, and to simplify the use of POGENOM.\nPOGENOM is a computer program that calculates several population genetic parameters for a genome in relation to a set of samples (https://github.com/EnvGen/POGENOM).'
   exit 0
   ;;
-
 esac
 done
 if [[ "$configFile" != /* ]] || [ -z "$configFile" ]; then
     echo "Please provide an absoltute path to configfile e.g., bash Input_POGENOM.sh '/absolute/path/to/configfile' "
     exit 0
 fi
-
 cat $configFile | sed s/"[{|}]"//g | sed s/":"/"="/g | sed s/",$"//g | sed s/" ="/"="/g | sed s/"= "/"="/g | sed s/'"'//g | sed s/" "//g > temporal
 . temporal
 
@@ -58,12 +57,13 @@ if [[ "$workdir" != /* ]] || [ -z "$workdir" ]; then
     exit 0
 fi
 #Checking key parameters setting
-options=("$dataset" "$min_coverage" "$min_breadth" "$min_bsq_for_cov_median_calculation" "$threads" "$genomes_ext" "$reads_ext" "$fwd_index" "$rev_index" "$bowtie2_params" "$mapqual" "$freebayes_parameters" "$vcffilter_qual" "$subsample")
+options=("$dataset" "$min_coverage" "$min_breadth" "$min_bsq_for_cov_median_calculation" "$threads" "$genomes_ext" "$reads_ext" "$fwd_index" "$rev_index" "$mapper" "$mapqual" "$freebayes_parameters" "$vcffilter_qual" "$subsample")
 for o in "${options[@]}"; do if [ -z "$o" ]; then echo "A key parameter is undefined, please check in the config_files/Input_POGENOM_config.json file the parameters used"; exit 1; fi; done
-
+if [[ "$mapper" == "bwa" ]] && [ -z "$coverm_filter_params" ]; then echo "CoverM filter parameters need to be defined, please check in the config_files/Input_POGENOM_config.json file the parameters used"; exit 1; fi
+if [[ "$mapper" != "bwa" ]] && [[ "$mapper" != "bowtie2" ]]; then echo "Aligner/mapper needs to be defined, options: bwa or bowtie2. Please check in the config_files/Input_POGENOM_config.json file the parameters used"; exit 1; fi
 if [[ $snakemake_extra_params == *","* ]]; then extra_params=$( echo $snakemake_extra_params | sed s/","/" "/g); else extra_params=$snakemake_extra_params; fi
-
 echo "INFO: Starting Input_POGENOM pipeline - Working directory: $workdir"
+if [[ "$mapper" == "bowtie2" ]] && [[ "$coverm" == FALSE ]]; then echo -e "WARNING: bowtie2 params to be used: $bowtie2_params \n         CoverM Filtre won't be used\n         Minimum bowtie2 parameters suggested: --ignore-quals --mp 1,1 --np 1 --rdg 0,1 --rfg 0,1 --score-min L,0,-0.05"; fi
 #----Using prefilt mode - full workflow
 mkdir -p $workdir/log_files
 if  [[ "$mode_prefilt" == TRUE ]]; then
@@ -73,9 +73,9 @@ if  [[ "$mode_prefilt" == TRUE ]]; then
   # main - mode prefilt
            cd $workdir
            echo "INFO: Generating Reads subsets - Fraction used $fraction"
-           bash src/create_prefilt_Reads_subdir.sh $fraction $genomes_ext $reads_ext $temp_sub_Reads_dir $dataset
+           bash src/create_prefilt_Reads_subdir.sh $fraction $reads_ext $temp_sub_Reads_dir $dataset $threads
            echo "INFO: Calculating Genome Median coverage - sub-samples - Median coverage threshold $min_coverage"
-           snakemake -s snakefiles/step_filter -j $threads $extra_params 2>log_files/samples_filter_$dataset.log
+           snakemake -s snakefiles/step_filter -j $threads --use-conda $extra_params 2>log_files/samples_filter_$dataset.log
 
            if [[ "$remove_subreads" == TRUE ]] && test -d "$temp_sub_Reads_dir/Reads"; then
                 echo "WARNING: You have chosen to remove $temp_sub_Reads_dir/Reads/"
@@ -92,7 +92,7 @@ if  [[ "$mode_prefilt" == TRUE ]]; then
                   do
                     mag=$(echo $line | cut -d " " -f1)
                     samples=$(echo $line | cut -d " " -f2)
-                    snakemake -s snakefiles/step_pogenom_input step1_all --config my_mag="$mag" my_samples="$samples" -j $threads $extra_params 2> log_files/$dataset.$mag.coverage_breadth.log
+                    snakemake -s snakefiles/step_pogenom_input step1_all --config my_mag="$mag" my_samples="$samples" -j $threads --use-conda $extra_params 2> log_files/$dataset.$mag.coverage_breadth.log
                     echo "INFO: Generating VCF files - Genome $mag"
                     snakemake -s snakefiles/step_pogenom_input vcf --config my_mag="$mag" my_samples="$samples" -j $threads $extra_params 2> log_files/$dataset.$mag"_vcf_files.log"
                   done
@@ -104,16 +104,16 @@ if  [[ "$mode_prefilt" == TRUE ]]; then
                    grep "#" $result_dir/Selected_samples_Genomes.txt
                    echo -e "**********************************************\n"
                fi
-           echo "INFO: Input_POGENOM pipeline is done !!!"
-  rm temporal
+
+ rm temporal; echo "INFO: Input_POGENOM pipeline is done !!!"; end=`date +%s`; runtimes=$( echo "$end - $start" | bc -l ); runtimem=$( printf "%.2f \n" $(echo $runtimes/60 | bc -l ) ); echo "***** Total time (s) $runtimes | (min) $runtimem"
   #---End of prefilt mode
 else
 #---Option when analysing a dataset without prefilt
   cd $workdir
       echo "INFO: Calculating Genome Median coverage and breadth - Dataset: $dataset - Median coverage threshold: $min_coverage - Breadth threshold: $min_breadth %"
-      snakemake -s snakefiles/step1_pogenom_input step1_all -j $threads $extra_params 2> log_files/$dataset"_Genomes_coverage_breadth.log"
+      snakemake -s snakefiles/step1_pogenom_input step1_all -j $threads --use-conda $extra_params 2> log_files/$dataset"_Genomes_coverage_breadth.log"
       echo "INFO: Generating VCF files"
       snakemake -s snakefiles/step1_pogenom_input vcf -j $threads $extra_params 2> log_files/$dataset"_Genomes_vcf_files.log"
       rm temporal
-  echo 'INFO: Input_POGENOM pipeline is done !!!'
+echo 'INFO: Input_POGENOM pipeline is done !!!'; end=`date +%s`; runtimes=$( echo "$end - $start" | bc -l ); runtimem=$( printf "%.2f \n" $(echo $runtimes/60 | bc -l ) ); echo "***** Total time (s) $runtimes | (min) $runtimem"
 fi

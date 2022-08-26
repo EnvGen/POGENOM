@@ -20,6 +20,7 @@ dataset=$8
 samplename=$9
 pdir="${10}"
 subsamp="${11}"
+m_ext="${12}"
 wkd=$(pwd)
 
 #--- Median coverage
@@ -28,7 +29,8 @@ cov=$(cut -f4 $mpileupfile | grep -vw "0" | sort -n | awk ' { a[i++]=$1; } END {
 #---size
 direct=$(echo $dataset | sed s/"_prefilt"//)
 
-positions=$(bowtie2-inspect -s $wkd/01_INDEXING/$direct/$mag/$mag | awk '{ FS = "\t" } ; BEGIN{L=0}; {L=L+$3}; END{print L}')
+positions=$(awk 'BEGIN{i=0}; !/^>/ {i=i+length($0)} END {print i}' $wkd/RAW_DATA/Genomes/$direct/$mag$m_ext )
+
 
 mkdir -p Genome_sizes
 echo "genome size:" $positions > Genome_sizes/$mag.size

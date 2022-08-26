@@ -36,13 +36,16 @@ def files_mergeables_per_mag(dataset, params_dir):
 rule freebayes:
      input: mag=expand("RAW_DATA/Genomes/{data}/{prefix_mag}{magext}", data = config["dataset"], prefix_mag = prefix_MAGs, magext = mags_ext),
            bam=files_mergeables_per_mag(dataset, params_dir)
-     output: out1=expand("06_VCF/{dataset}/{params_dir}/{prefix_mag}.vcf", dataset = dataset, prefix_mag = prefix_MAGs, params_dir = params_dir)
+     output: out1=expand("06_VCF/{dataset}/{params_dir}/{prefix_mag}.vcf", dataset = dataset, prefix_mag = prefix_MAGs, params_dir = params_dir),
+             out2=expand("06_VCF/{dataset}/{params_dir}/{prefix_mag}_unfiletred.vcf", dataset = dataset, prefix_mag = prefix_MAGs, params_dir = params_dir)
      threads: thrs
      params: pr=config["freebayes_parameters"], qual=config["vcffilter_qual"],
              log="06_VCF/"+dataset+"/"+params_dir+"/"+prefix_MAGs+"_samples.txt"
      message: "Generating vcf file on {input.mag} using parameters {params.pr} vcffilter {params.qual}"
      shell: """
-                samtools index {input.bam} -@ {threads}
-                freebayes -f {input.mag} {input.bam} {params.pr} | vcffilter -f {params.qual} > {output.out1}
+                samtools index {input.bam}
+                samtools faidx {input.mag} -o {input.mag}.fai
+                freebayes-parallel <(fasta_generate_regions.py {input.mag}.fai 100000) {threads} -f {input.mag} {params.pr} {input.bam} > {output.out2}
+                vcffilter -f {params.qual} {output.out2} > {output.out1}
                 vcfsamplenames {output.out1} > {params.log}
             """

@@ -38,34 +38,83 @@ rule all:
          expand("PREFILT/{dataset}/params_cov_{mincov}_mpq_{mapqual}_bq_{bq}_fr_{fr}/Estimated_median_cov_per_sample.tsv", dataset = dataset, fr = fraction, mapqual = mapqual, bq = bq, mincov = min_coverage),
          expand("PREFILT/{dataset}/params_cov_{mincov}_mpq_{mapqual}_bq_{bq}_fr_{fr}/Selected_samples_Genomes.txt", dataset = dataset, fr = fraction, mapqual = mapqual, bq = bq, mincov = min_coverage)
 
-rule indexing:
-    input: expand("RAW_DATA/Genomes/{dataset}/{prefix_mag}{mags_ext}", dataset = dataset, prefix_mag = prefix_MAGs, mags_ext = mags_ext)
-    output: expand("01_INDEXING/{{dataset}}/{{prefix_mag}}/{{prefix_mag}}.{suffix1}.bt2", dataset = dataset, suffix1 = range(1,5), prefix_mag = prefix_MAGs),
-            expand("01_INDEXING/{{dataset}}/{{prefix_mag}}/{{prefix_mag}}.rev.{suffix}.bt2", dataset = dataset, suffix = range(1,3), prefix_mag = prefix_MAGs)
-    params: ref = "01_INDEXING/{dataset}/{prefix_mag}/{prefix_mag}",
-            input = "RAW_DATA/Genomes/{dataset}/{prefix_mag}"+config["genomes_ext"]
-    threads: thrs
-    message: "indexing {params.input} sequence"
-    shell: "bowtie2-build {params.input} {params.ref} --threads {threads} -f -q"
+if config["mapper"] == "bwa" :
+  rule indexingA:
+      input: expand("RAW_DATA/Genomes/{dataset}/{prefix_mag}{mags_ext}", dataset = dataset, prefix_mag = prefix_MAGs, mags_ext = mags_ext)
+      output: expand("01_INDEXING/{{dataset}}/{{prefix_mag}}/{{prefix_mag}}.{suffix}", dataset = dataset, suffix = ["0123","ann","pac","amb","bwt.2bit.64"], prefix_mag = prefix_MAGs)
+      params: ref = "01_INDEXING/{dataset}/{prefix_mag}/{prefix_mag}",
+              input = "RAW_DATA/Genomes/{dataset}/{prefix_mag}"+config["genomes_ext"]
+      threads: 1
+      conda: "BWA_env.yaml"
+      message: "indexing {params.input} sequence"
+      shell: "bwa-mem2 index -p {params.ref} {params.input} 2>/dev/null"
 
-rule mapping:
-  input: expand("01_INDEXING/{dataset}/{prefix_mag}/{prefix_mag}.{suffix1}.bt2", dataset = dataset, suffix1 = range(1,5), prefix_mag = prefix_MAGs),
-         expand("01_INDEXING/{dataset}/{prefix_mag}/{prefix_mag}.rev.{suffix}.bt2", dataset = dataset, suffix = range(1,3), prefix_mag = prefix_MAGs),
-         fwd = expand("{tmpdir}/Reads/fraction_{fraction}/{sample}{fwdi}{reads_ext}", tmpdir = config["temp_sub_Reads_dir"], fraction=fraction, sample = samples, reads_ext = reads_ext, fwdi = config["fwd_index"]),
-         rev = expand("{tmpdir}/Reads/fraction_{fraction}/{sample}{revi}{reads_ext}", tmpdir = config["temp_sub_Reads_dir"], fraction=fraction, sample = samples, reads_ext = reads_ext, revi = config["rev_index"])
-  output: expand("PREFILT/{{dataset}}/02_MAPPING/params_mpq_{{mapqual}}_fr_{{fr}}/{{prefix_mag}}/{{sample}}_{{prefix_mag}}_sorted_position.bam", dataset = dataset, prefix_mag = prefix_MAGs, mapqual = mapqual, sample = samples, fr = fraction)
-  params: index = "01_INDEXING/{dataset}/{prefix_mag}/{prefix_mag}",
-          mapqual = mapqual,
-          bowtie2 = config["bowtie2_params"],
-          groupfwd2 = config["temp_sub_Reads_dir"]+"/Reads/fraction_"+config["fraction"]+"/{sample}"+config["fwd_index"]+config["reads_ext"],
-          grouprev2 = config["temp_sub_Reads_dir"]+"/Reads/fraction_"+config["fraction"]+"/{sample}"+config["rev_index"]+config["reads_ext"],
-          view = sam_view_params
-  log: expand("PREFILT/{{dataset}}/02_MAPPING/params_mpq_{{mapqual}}_fr_{{fr}}/log_bowtie2/{{prefix_mag}}/{{sample}}_{{prefix_mag}}.log", dataset = dataset, prefix_mag = prefix_MAGs, mapqual = mapqual, sample = samples, fr = fraction)
-  threads: thrs
-  message: "mapping reads to {params.index} \nfwd: {params.groupfwd2}\nrev: {params.grouprev2}\n mapping quality > {params.mapqual} \n and sorting mapping reads by position"
-  shell: """
-             bowtie2 {params.bowtie2} -p {threads} -x {params.index} -1 {params.groupfwd2} -2 {params.grouprev2} 2> {log} | samtools view {params.view} -q {params.mapqual} --threads {threads} | samtools sort -o {output} --threads {threads}
-         """
+  rule mappingA:
+    input: expand("01_INDEXING/{{dataset}}/{{prefix_mag}}/{{prefix_mag}}.{suffix}", dataset = dataset, suffix = ["0123","ann","pac","amb","bwt.2bit.64"], prefix_mag = prefix_MAGs),
+           fwd = expand("{tmpdir}/Reads/fraction_{fraction}/{sample}{fwdi}{reads_ext}", tmpdir = config["temp_sub_Reads_dir"], fraction=fraction, sample = samples, reads_ext = reads_ext, fwdi = config["fwd_index"]),
+           rev = expand("{tmpdir}/Reads/fraction_{fraction}/{sample}{revi}{reads_ext}", tmpdir = config["temp_sub_Reads_dir"], fraction=fraction, sample = samples, reads_ext = reads_ext, revi = config["rev_index"])
+    output: expand("PREFILT/{{dataset}}/02_MAPPING/params_mpq_{{mapqual}}_fr_{{fr}}/{{prefix_mag}}/{{sample}}_{{prefix_mag}}_sorted_position.bam", dataset = dataset, prefix_mag = prefix_MAGs, mapqual = mapqual, sample = samples, fr = fraction)
+    params: index = "01_INDEXING/{dataset}/{prefix_mag}/{prefix_mag}",
+            mapqual = mapqual,
+            groupfwd2 = config["temp_sub_Reads_dir"]+"/Reads/fraction_"+config["fraction"]+"/{sample}"+config["fwd_index"]+config["reads_ext"],
+            grouprev2 = config["temp_sub_Reads_dir"]+"/Reads/fraction_"+config["fraction"]+"/{sample}"+config["rev_index"]+config["reads_ext"],
+            view = sam_view_params,
+            msam=config["coverm_filter_params"],
+            pr=config["bwame2_params"],
+            out1="PREFILT/{dataset}/02_MAPPING/params_mpq_{mapqual}_fr_{fr}/{prefix_mag}/{sample}_{prefix_mag}_unfiltred.bam",
+            out="PREFILT/{dataset}/02_MAPPING/params_mpq_{mapqual}_fr_{fr}/{prefix_mag}/{sample}_{prefix_mag}_filtred_unsorted_position.bam"
+    log: expand("PREFILT/{{dataset}}/02_MAPPING/params_mpq_{{mapqual}}_fr_{{fr}}/log_bwa/{{prefix_mag}}/{{sample}}_{{prefix_mag}}.log", dataset = dataset, prefix_mag = prefix_MAGs, mapqual = mapqual, sample = samples, fr = fraction)
+    threads: thrs
+    conda: "BWA_env.yaml"
+    message: "mapping reads to {params.index} \nfwd: {params.groupfwd2}\nrev: {params.grouprev2}\n mapping quality > {params.mapqual} \n and sorting mapping reads by position"
+    shell: """
+            bwa-mem2 mem {params.pr} -t {threads} {params.index} {params.groupfwd2} {params.grouprev2} 2> {log} | samtools view {params.view} -q {params.mapqual} --threads {threads} > {params.out1}
+            coverm filter -b {params.out1} -o {params.out} {params.msam} --threads {threads}
+            samtools sort -o {output} --threads {threads} {params.out}
+            rm {params.out} {params.out1}
+           """
+
+if config["mapper"] == "bowtie2" :
+  rule indexing:
+      input: expand("RAW_DATA/Genomes/{dataset}/{prefix_mag}{mags_ext}", dataset = dataset, prefix_mag = prefix_MAGs, mags_ext = mags_ext)
+      output: expand("01_INDEXING/{{dataset}}/{{prefix_mag}}/{{prefix_mag}}.{suffix1}.bt2", dataset = dataset, suffix1 = range(1,5), prefix_mag = prefix_MAGs),
+              expand("01_INDEXING/{{dataset}}/{{prefix_mag}}/{{prefix_mag}}.rev.{suffix}.bt2", dataset = dataset, suffix = range(1,3), prefix_mag = prefix_MAGs)
+      params: ref = "01_INDEXING/{dataset}/{prefix_mag}/{prefix_mag}",
+              input = "RAW_DATA/Genomes/{dataset}/{prefix_mag}"+config["genomes_ext"]
+      threads: thrs
+      conda: "BT2_env.yaml"
+      message: "indexing {params.input} sequence"
+      shell: "bowtie2-build {params.input} {params.ref} --threads {threads} -f -q"
+
+  rule mapping:
+      input: expand("01_INDEXING/{dataset}/{prefix_mag}/{prefix_mag}.{suffix1}.bt2", dataset = dataset, suffix1 = range(1,5), prefix_mag = prefix_MAGs),
+             expand("01_INDEXING/{dataset}/{prefix_mag}/{prefix_mag}.rev.{suffix}.bt2", dataset = dataset, suffix = range(1,3), prefix_mag = prefix_MAGs),
+             fwd = expand("{tmpdir}/Reads/fraction_{fraction}/{sample}{fwdi}{reads_ext}", tmpdir = config["temp_sub_Reads_dir"], fraction=fraction, sample = samples, reads_ext = reads_ext, fwdi = config["fwd_index"]),
+             rev = expand("{tmpdir}/Reads/fraction_{fraction}/{sample}{revi}{reads_ext}", tmpdir = config["temp_sub_Reads_dir"], fraction=fraction, sample = samples, reads_ext = reads_ext, revi = config["rev_index"])
+      output: expand("PREFILT/{{dataset}}/02_MAPPING/params_mpq_{{mapqual}}_fr_{{fr}}/{{prefix_mag}}/{{sample}}_{{prefix_mag}}_sorted_position.bam", dataset = dataset, prefix_mag = prefix_MAGs, mapqual = mapqual, sample = samples, fr = fraction)
+      params: index = "01_INDEXING/{dataset}/{prefix_mag}/{prefix_mag}",
+              mapqual = mapqual,
+              bowtie2 = config["bowtie2_params"],
+              groupfwd2 = config["temp_sub_Reads_dir"]+"/Reads/fraction_"+config["fraction"]+"/{sample}"+config["fwd_index"]+config["reads_ext"],
+              grouprev2 = config["temp_sub_Reads_dir"]+"/Reads/fraction_"+config["fraction"]+"/{sample}"+config["rev_index"]+config["reads_ext"],
+              msam=config["coverm_filter_params"],
+              out1="PREFILT/{dataset}/02_MAPPING/params_mpq_{mapqual}_fr_{fr}/{prefix_mag}/{sample}_{prefix_mag}_unfiltred.bam",
+              out="PREFILT/{dataset}/02_MAPPING/params_mpq_{mapqual}_fr_{fr}/{prefix_mag}/{sample}_{prefix_mag}_filtred_unsorted_position.bam",
+              view = sam_view_params,
+              coverm = config["coverm"]
+      log: expand("PREFILT/{{dataset}}/02_MAPPING/params_mpq_{{mapqual}}_fr_{{fr}}/log_bowtie2/{{prefix_mag}}/{{sample}}_{{prefix_mag}}.log", dataset = dataset, prefix_mag = prefix_MAGs, mapqual = mapqual, sample = samples, fr = fraction)
+      threads: thrs
+      conda: "BT2_env.yaml"
+      message: "mapping reads to {params.index} \nfwd: {params.groupfwd2}\nrev: {params.grouprev2}\n mapping quality > {params.mapqual} \n and sorting mapping reads by position"
+      shell: """
+                bowtie2 {params.bowtie2} -p {threads} -x {params.index} -1 {params.groupfwd2} -2 {params.grouprev2} 2> {log} | samtools view {params.view} -q {params.mapqual} --threads {threads} > {params.out1}
+                if [ {params.coverm} == TRUE ]; then
+                  coverm filter -b {params.out1} -o {params.out} --threads {threads} {params.msam}
+                  samtools sort -o {output} --threads {threads} {params.out}; rm {params.out} {params.out1}
+                else
+                  samtools sort -o {output} --threads {threads} {params.out1}; rm {params.out1}
+                fi
+             """
 
 rule indexing_reads_mapping:
   input: expand("PREFILT/{dataset}/02_MAPPING/params_mpq_{mapqual}_fr_{fr}/{prefix_mag}/{sample}_{prefix_mag}_sorted_position.bam", dataset = dataset, prefix_mag = prefix_MAGs, mapqual = mapqual, sample = samples, fr = fraction)
@@ -73,7 +122,7 @@ rule indexing_reads_mapping:
   params: input="PREFILT/{dataset}/02_MAPPING/params_mpq_{mapqual}_fr_{fr}/{prefix_mag}/{sample}_{prefix_mag}_sorted_position.bam"
   threads: config["threads"]
   message: "indexing sorted reads mapping from {params.input}"
-  shell: "samtools index {params.input} -@ {threads}"
+  shell: "samtools index {params.input}"
 
 rule mpileup_and_coverage:
   input: expand("PREFILT/{dataset}/02_MAPPING/params_mpq_{mapqual}_fr_{fr}/{prefix_mag}/{sample}_{prefix_mag}_sorted_position.bam", dataset = dataset, prefix_mag = prefix_MAGs, mapqual = mapqual, sample = samples, fr = fraction)

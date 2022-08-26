@@ -1,0 +1,10 @@
+name: BWA_env
+
+channels:
+  - conda-forge
+  - bioconda
+
+dependencies:
+  - samtools=1.9
+  - bowtie2=2.4.5
+  - coverm=0.6.1
