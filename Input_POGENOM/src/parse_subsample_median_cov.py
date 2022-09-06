@@ -36,7 +36,7 @@ with open(os.path.join(args.out,"Estimated_median_cov_per_sample.tsv"), "w") as 
                     if col != 0:
                         value.append(col)
                 print(m, sample, float(np.median(value)/float(args.f)),sep="\t", file=fout1)
-                if float(np.median(value)/float(args.f)) > float(args.t):
+                if float(np.median(value)/float(args.f)) >= float(args.t):
                     selected_sample_list.append(sample)
 
         if len(selected_sample_list) != 0:

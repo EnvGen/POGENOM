@@ -9,10 +9,10 @@ err_report() {
     mess2="Use the command:\n    'snakemake -s snakefiles/step1_pogenom_input --unlock'"
     mess3="Use the command:\n    'snakemake -s snakefiles/step_pogenom_input --config my_mag='"$mag"' my_samples='"$samples"' --unlock'"
     mess="or\n    'snakemake -s snakefiles/step2 --config mag_name='"$mag"' --unlock' or\n    'snakemake -s snakefiles/step2_B --config mag_name='"$mag"' --unlock'"
-    if [ "$1" == 76 ]; then echo -e "if you are using conda, check if the 'ip_env' has been activated - command:\n    'conda activate ip_env' "; fi
-    if [ "$1" == 78 ]; then echo -e "TIP 1 - Look at $wd/log_files/samples_filter_$dataset.log\nTIP 2 - $mess1\nTIP 3 - Use the command:\n    'snakemake -s snakefiles/step_filter --unlock'\n     and run the pipeline again"; fi
-    if [ "$1" == 95 ]; then echo -e "TIP 1 - Look at $wd/log_files/$dataset.$mag.coverage_breadth.log\nTIP 2 - $mess1\nTIP 3 - $mess3\n     and run the pipeline again"; fi
-    if [ "$1" == 97 ]; then echo -e "TIP 1 - Look at $wd/log_files/$dataset.$mag"_vcf_files.log"\nTIP 2 - $mess1\nTIP 3 - $mess3 $mess\n     and run the pipeline again"; fi
+    if [ "$1" == 79 ]; then echo -e "if you are using conda, check if the 'ip_env' has been activated - command:\n    'conda activate ip_env' "; fi
+    if [ "$1" == 81 ]; then echo -e "TIP 1 - Look at $wd/log_files/samples_filter_$dataset.log\nTIP 2 - $mess1\nTIP 3 - Use the command:\n    'snakemake -s snakefiles/step_filter --unlock'\n     and run the pipeline again"; fi
+    if [ "$1" == 96 ]; then echo -e "TIP 1 - Look at $wd/log_files/$dataset.$mag.coverage_breadth.log\nTIP 2 - $mess1\nTIP 3 - $mess3\n     and run the pipeline again"; fi
+    if [ "$1" == 98 ]; then echo -e "TIP 1 - Look at $wd/log_files/$dataset.$mag"_vcf_files.log"\nTIP 2 - $mess1\nTIP 3 - $mess3 $mess\n     and run the pipeline again"; fi
     if [ "$1" == 110 ]; then echo -e "TIP 1 - Look at\n    $wd/log_files/$dataset.$mag.coverage_breadth.log or\n    $wd/log_files/$dataset.$mag"_vcf_files.log"\nTIP 2 - $mess1\nTIP 3 - $mess3\n     and run the pipeline again"; fi
     if [ "$1" == 114 ]; then echo -e "TIP 1 - Look at $wd/log_files/$dataset"_Genomes_coverage_breadth.log"\nTIP 2 - $mess1\nTIP 3 - $mess2\n     and run the pipeline again"; fi
     if [ "$1" == 116 ]; then echo -e "TIP 1 - Look at $wd/log_files/$dataset"_Genomes_vcf_files.log"\nTIP 2 - $mess1\nTIP 3 - $mess2 $mess\n     and run the pipeline again"; fi
@@ -71,18 +71,19 @@ if  [[ "$mode_prefilt" == TRUE ]]; then
   options2=("$fraction" "$temp_sub_Reads_dir")
   for p in "${options2[@]}"; do if [ -z "$p" ]; then echo 'A key parameter in "mode_prefilt" is undefined, please check in the config_files/Input_POGENOM_config.json file the parameters used'; exit 1; fi; done
   # main - mode prefilt
-           cd $workdir
+      cd $workdir
+      result_dir="PREFILT/"$dataset"/params_cov_"$min_coverage"_mpq_"$mapqual"_bq_"$min_bsq_for_cov_median_calculation"_fr_"$fraction
+      file_ready=$result_dir/Selected_samples_Genomes.txt
+      if [ ! -s "$file_ready" ]; then
            echo "INFO: Generating Reads subsets - Fraction used $fraction"
            bash src/create_prefilt_Reads_subdir.sh $fraction $reads_ext $temp_sub_Reads_dir $dataset $threads
            echo "INFO: Calculating Genome Median coverage - sub-samples - Median coverage threshold $min_coverage"
            snakemake -s snakefiles/step_filter -j $threads --use-conda $extra_params 2>log_files/samples_filter_$dataset.log
-
            if [[ "$remove_subreads" == TRUE ]] && test -d "$temp_sub_Reads_dir/Reads"; then
                 echo "WARNING: You have chosen to remove $temp_sub_Reads_dir/Reads/"
                 rm -rf $temp_sub_Reads_dir/Reads/
            fi
-           result_dir="PREFILT/"$dataset"/params_cov_"$min_coverage"_mpq_"$mapqual"_bq_"$min_bsq_for_cov_median_calculation"_fr_"$fraction
-
+       else echo -e "INFO: The file $result_dir/Selected_samples_Genomes.txt already exists and it is not empty"; fi
                file_empty=$(grep -v "#" $result_dir/Selected_samples_Genomes.txt | wc -l)
                if [ "$file_empty" -eq 0 ]; then
                   echo -e "INFO: With the current parameter setting: Dataset $dataset - Fraction $fraction - Median coverage threshold $min_coverage - Min-base quality $min_bsq_for_cov_median_calculation - Mapping quality $mapqual\n      There is no Genome - sample with Estimated Median Coverage higher than threshold.\n      A vcf file cannot be created\n"
@@ -104,7 +105,6 @@ if  [[ "$mode_prefilt" == TRUE ]]; then
                    grep "#" $result_dir/Selected_samples_Genomes.txt
                    echo -e "**********************************************\n"
                fi
-
  rm temporal; echo "INFO: Input_POGENOM pipeline is done !!!"; end=`date +%s`; runtimes=$( echo "$end - $start" | bc -l ); runtimem=$( printf "%.2f \n" $(echo $runtimes/60 | bc -l ) ); echo "***** Total time (s) $runtimes | (min) $runtimem"
   #---End of prefilt mode
 else

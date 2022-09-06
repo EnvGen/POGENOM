@@ -111,10 +111,10 @@ In the "Input_POGENOM_config.json" file, set the parameters to be used. It conta
   Number of threads. Integer. It cannot be empty.
 
 "genomes_ext": ".fa",
-  Extention used on your genome files.
+  Extention used on your genome files. Geno files cannot be compressed.
 
 "reads_ext": ".fq.gz",
-  Extention used on your read files. For instance, ".fq.gz" if files are named "sample_R1.fq.gz & sample_R2.fq.gz".
+  Extention used on your read files. For instance, ".fq.gz" if files are named "sample_R1.fq.gz & sample_R2.fq.gz". Reads must be compressed (.gz)
 
 "fwd_index": "_R1",
   Index used to define forward reads.
@@ -122,28 +122,43 @@ In the "Input_POGENOM_config.json" file, set the parameters to be used. It conta
 "rev_index": "_R2",
   Index used to define reverse reads.
 
-"bowtie2_params": "--ignore-quals --mp 1,1 --np 1 --rdg 0,1 --rfg 0,1 --score-min L,0,-0.05",
-  Bowtie2 mapping parameters. The –score-min then gives the minimum score that is allowed to report an alignment.
-  Here, it represents a 95% identity threshold.
-  For more information visit http://bowtie-bio.sourceforge.net/bowtie2/manual.shtml
+"mapper": "bowtie2",
+  Aligner to be used. Either "bwa" or "bowtie2".
+  It cannot be empty.
+
+"bwame2_params": "",
+  BWA-mem2 mem mapping parameters. If empty, BWA_mem2 mem will run on default parameters. BWA-mem2 mem aligner performs only local alignment.
+
+"bowtie2_params": "--no-mixed --no-discordant --ignore-quals --mp 1,1 --np 1 --rdg 0,1 --rfg 0,1 --score-min L,0,-0.05"
+  Bowtie2 mapping parameters. By default, Bowtie2 perform end-to-end read alignment. For more information visit http://bowtie-bio.sourceforge.net/bowtie2/manual.shtml
+
+"coverm": "FALSE",
+  Activate coverM filter. If set to FALSE, we suggest using bowtie2 as aligner with the following `bowtie2_params`: "--no-mixed --no-discordant --ignore-quals --mp 1,1 --np 1 --rdg 0,1 --rfg 0,1 --score-min L,0,-0.05"
+  The –score-min then gives the minimum score that is allowed to report an alignment. Here, it represents a 95% identity threshold. For more information visit http://bowtie-bio.sourceforge.net/bowtie2/manual.shtml
+
+"coverm_filter_params": "--proper-pairs-only --min-read-aligned-percent-pair 100  --min-read-percent-identity-pair 95 --exclude-supplementary",
+  CoverM filter parameter used to filter Bam files. Here, it keep proper pair reads with 95% identity, and 100% aligned.
+  If bwa-mem2 or bowtie2 with default parameters are used, then it cannot be empty.
 
 "mapqual": 20,
   Read mapping quality threshold in BAM files. Integer. Parameter used in samtools view -q {}. It cannot be empty.
 
-"samtools_view_alignment_extra_filters": "-f 2 -F 1024",
+"samtools_view_alignment_extra_filters": "-f 2 -F 3084",
   Filters used for selecting mapped reads to be included in the BAM file.
-  Here it selects only paired reads (-f 2) and avoids optical duplicates (-F 1024).
-  If no filters are required, then set an empty string ("samtools_view_alignment_extra_filters": "",)
+  Here it selects only paired reads (-f 2) and avoids optical duplicates (-F 1024), read and mate unmapped, supplementary alignments (-F 3084).
+  If no filters are required, then set an empty string ("samtools_view_alignment_extra_filters": "",).
+  For more information about samtools flags, please go to https://broadinstitute.github.io/picard/explain-flags.html.
 
-"freebayes_parameters": "-C 4 -p 1 --pooled-continuous --read-max-mismatch-fraction 0.05 --min-alternate-fraction 0.01 -q 15",
-  Parameters used during variant calling.
+"freebayes_parameters": "-C 4 -p 1 --pooled-continuous --read-max-mismatch-fraction 0.05 --min-alternate-fraction 0.01 -q 15 --report-monomorphic",
+  Parameters used during variant calling. The flag --report-monomorphic is included. Both polymorphic and monomorphic sites will be output.
   By default, freebayes exclude duplicates marked as such in alignments.
-  If you want to include duplicates, use the tag ``--use-duplicate-reads`` and remove "-F 1024" in "samtools_view_alignment_extra_filters".
+  If you want to include duplicates, use the tag ``--use-duplicate-reads`` and do not use "-F 1024" in "samtools_view_alignment_extra_filters".
   The flag ``-q --min-base-quality Q``, exclude alleles from analysis if their supporting base quality is less than Q.
 
 "vcffilter_qual": "'QUAL > 20'"
   Filtering variant calling.
   Here it removes any sites with an estimated probability of not being polymorphic less than Phred 20 (corresponding to 99% probability of being a real SNP).
+  In this step, monomorphic sites are removed.
   It cannot be empty.
 
 "snakemake_extra_params": "<command line 1>, <command line 2>"

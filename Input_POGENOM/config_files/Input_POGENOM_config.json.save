@@ -1,15 +1,15 @@
 {
   "workdir": "/absPathTo/POGENOM/Input_POGENOM",
-  "dataset": "Name",
+  "dataset": "NAME",
   "min_coverage": 20,
   "min_breadth": 40,
   "subsample": "TRUE",
   "min_bsq_for_cov_median_calculation": 15,
-  "mode_prefilt": "TRUE",
+  "mode_prefilt": "FALSE",
   "fraction": "0.15",
   "temp_sub_Reads_dir": "PREFILT",
   "remove_subreads": "FALSE",
-  "threads": 15,
+  "threads": 8,
   "genomes_ext": ".fa",
   "reads_ext": ".fq.gz",
   "fwd_index": "_R1",
@@ -23,5 +23,5 @@
   "samtools_view_alignment_extra_filters": "-f 2 -F 1024",
   "freebayes_parameters": "-C 4 -p 1 --pooled-continuous --read-max-mismatch-fraction 0.05 --min-alternate-fraction 0.01 -q 15 --report-monomorphic",
   "vcffilter_qual": "'QUAL > 20'",
-  "snakemake_extra_params": ""
+  "snakemake_extra_params": "--quiet"
 }

@@ -4,13 +4,19 @@ Installation
 List of required software/packages
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 - `snakemake <https://snakemake.readthedocs.io/en/stable/>`_
-- `bowtie2 <http://bowtie-bio.sourceforge.net/bowtie2/>`_
 - `samtools <http://www.htslib.org/>`_
 - `vcflib <https://github.com/vcflib/vcflib>`_
 - `freebayes <https://github.com/ekg/freebayes>`_
-- `picard <https://broadinstitute.github.io/picard/>`_
 - `numpy <https://numpy.org/>`_
 - `python <https://www.python.org/>`_
+
+Aligners:
+- `bowtie2 <http://bowtie-bio.sourceforge.net/bowtie2/>`_
+- `bwa-mem2 <https://github.com/bwa-mem2/bwa-mem2>`_
+
+bam filter:
+- `coverm filter <https://wwood.github.io/CoverM/coverm-filter.html>`_
+
 
 Installing the pipeline
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -52,6 +58,3 @@ This directory contains:
 Create the virtual environment (with name ip_env) using the command::
 
     conda env create -f config_files/Input_POGENOM_conda_env_setup.yaml
-
-
-
