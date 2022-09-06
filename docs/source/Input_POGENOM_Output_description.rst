@@ -82,6 +82,9 @@ Example of filename::
     06_VCF/<dataset>/params_<parameters>/<genome_name>.vcf
     where <parameters> is a string of the key parameters used, for instance 'cov_20_bdth_40_subsamp_TRUE_mpq_20_bq_15'.
 
+An additional file including all the monomorphic sites can be found in the file:
+    06_VCF/<dataset>/params_<parameters>/<genome_name>_unfiltered.vcf
+
 The list of samples used for the generation of the vcf files can be found in the files ``06_VCF/<dataset>/params_<parameters>/<genome_name>_samples.txt``
 
 When no BAM file passes the filter (coverage and breadth), a vcf file cannot be created.

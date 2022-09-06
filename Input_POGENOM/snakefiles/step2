@@ -61,7 +61,7 @@ rule freebayes:
              mag="RAW_DATA/Genomes/"+config["dataset"]+"/{prefix_mag}"+config["genomes_ext"],
              bam="05_BAM_merged/{dataset}/"+params_dir+"/{prefix_mag}_merged_sorted_position.bam",
              out="06_VCF/{dataset}/"+params_dir+"/{prefix_mag}.vcf",
-             outmono="06_VCF/{dataset}/"+params_dir+"/{prefix_mag}_unfiltred.vcf",
+             outmono="06_VCF/{dataset}/"+params_dir+"/{prefix_mag}_unfiltered.vcf",
              log="06_VCF/{dataset}/"+params_dir+"/{prefix_mag}_samples.txt",
              qual=config["vcffilter_qual"]
      message: "Generating vcf file on {params.mag} using parameters {params.pr} and vcffilter {params.qual}"
