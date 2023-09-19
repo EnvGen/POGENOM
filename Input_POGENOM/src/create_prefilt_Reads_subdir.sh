@@ -7,7 +7,7 @@ err_report() {
 
 trap 'err_report $LINENO' ERR
 
-start=`date +%s`
+#start=`date +%s`
 #---arguments---
 wd=$(pwd)
 fract=$1
@@ -62,7 +62,7 @@ for r in "${Rds[@]}"
    done
 wait
 
-end=`date +%s`
-runtimes=$( echo "$end - $start" | bc -l )
-runtimem=$( printf "%.2f \n" $(echo $runtimes/60 | bc -l ) )
-echo "INFO: Subsampling reads done in (s) $runtimes | (min) $runtimem"
+#end=`date +%s`
+#runtimes=$( echo "$end - $start" | bc -l )
+#runtimem=$( printf "%.2f \n" $(echo $runtimes/60 | bc -l ) )
+#echo "INFO: Subsampling reads done in (s) $runtimes | (min) $runtimem"
