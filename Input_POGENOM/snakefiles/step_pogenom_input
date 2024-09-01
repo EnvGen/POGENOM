@@ -19,7 +19,7 @@ params_dir = "_".join(["params","cov", str(min_coverage), "bdth", str(min_breadt
 
 #------------------
 prefix_MAGs = config["my_mag"]
-samples =[ i for i in config["my_samples"].split(",")]
+samples =[ i for i in str(config["my_samples"]).split(",")]
 
 #--------------Checking samtools view key parameters after reads mapping ------
 if config["samtools_view_alignment_extra_filters"] == "" :
