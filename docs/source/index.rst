@@ -35,8 +35,8 @@ Contents
 Citing POGENOM
 ==============
 
-POGENOM doesn't have a paper yet, meanwhile please cite it like this:
+Please cite POGENOM this way:
 
-Sjöqvist C, Delgado Zambrano LF, Alneberg J, Andersson AF (2020). POGENOM: population genomics from metagenomes.https://github.com/EnvGen/POGENOM.
+Sjöqvist C, Delgado Zambrano LF, Alneberg J, Andersson AF (2020). Ecologically coherent population structure of uncultivated bacterioplankton. ISME J 15, 3034–3049 (2021). https://doi.org/10.1038/s41396-021-00985-z
 
 If you use the Input_POGENOM pipeline, make sure to cite the included software/packages that are listed in its documentation.
